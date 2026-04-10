@@ -130,7 +130,15 @@ We initially implemented a recording mechanism in Coypu based on Announcers and 
 To address these limitations, we reimplemented the recorder using Method Proxies. This approach cleanly separates instrumentation from performance-related methods, resulting in a more modular and extensible design.
 
 \section{Design and Implementation}
+To support recording of live evaluations, we developed a custom extension of the Pharo Playground. This was necessary to gain control over expression evaluation without modifying the core environment.
 
+The extended Playground provides a hook on each evaluated expression before execution. This hook captures the evaluated command together with a timestamp. When recording is active, each evaluation is forwarded to a dedicated handler. The handler creates a structured record containing the evaluated expression and its timestamp, representing an absolute point in time using \texttt{DateAndTime now}. During replay, temporal spacing is reconstructed by computing the difference between consecutive timestamps, yielding a \texttt{Duration} used to reproduce the original timing of the performance.
+
+The handler is also connected to the Playground context, allowing it to access the current editor state. This enables associating each evaluation with the current state of the live coding session.
+
+To control the recording workflow, four icons were added to the Playground toolbar. The first starts a new recording session, the second stops the current session, and the third clears the recorded data. The fourth opens the recorded session in a new Playground, where captured evaluations can be inspected, replayed, or edited as a standalone script.
+
+The resulting design cleanly separates the recording logic from the execution semantics of the Playground. It allows evaluation capture to be added without invasive changes to the language infrastructure.
 
 \section{Conclusion}
 Using Method Proxies to implement a recorder for live coding performances in Coypu required only a small number of classes and methods, and was achieved without modifying the Coypu codebase.
