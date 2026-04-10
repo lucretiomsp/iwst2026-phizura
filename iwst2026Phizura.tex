@@ -1,0 +1,157 @@
+%% The first command in your LaTeX source must be the \documentclass command.
+%%
+%% Options:
+%% twocolumn : Two column layout.
+%% hf: enable header and footer.
+\documentclass[
+% twocolumn,
+% hf,
+]{ceurart}
+
+\setlength{\leftmargini}{8em} 
+
+%%
+%% One can fix some overfulls
+\sloppy
+
+
+%%%%% My macros
+\input{macros}
+% syntax highlighting for Pharo in code blocks
+\include{./smalltalkEnv}
+
+
+%%
+%% Minted listings support 
+%% Need pygment <http://pygments.org/> <http://pypi.python.org/pypi/Pygments>
+\usepackage{listings}
+\usepackage{algorithmic}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{listings}
+\usepackage{multirow}
+\usepackage{multicol}
+
+
+
+
+
+%%
+%% end of the preamble, start of the body of the document source.
+\begin{document}
+
+%%
+%% Rights management information.
+%% CC-BY is default license.
+\copyrightyear{2026}
+\copyrightclause{Copyright for this paper by its authors.
+  Use permitted under Creative Commons License Attribution 4.0
+  International (CC BY 4.0).}
+
+%%
+%% This command is for the conference information
+\conference{IWST 2026: International Workshop on Smalltalk Technologies, July 4--10, 2026, Plovdiv, Bulgaria}
+
+%%
+%% The "title" command
+\title{Phizura: O-the-Fly Music Recording with Method Proxies}
+
+
+
+%%
+%% The "author" command and its associated commands are used to define
+%% the authors and their affiliations.
+\author[1]{Domenico Cipriani}[%
+orcid=0009-0005-3023-3192,
+email=mspgate@gmail.com,
+]
+
+
+\author[2]{Sebastian {Jordan Montaño}}[%
+orcid=0000-0002-7726-8377,
+email=sebastian.jordan@inria.fr,
+% orcid=0000-0002-7726-8377,
+% url=https://jordanmontt.fr,
+]
+
+\author[2]{Stéphane Ducasse}[
+orcid=0000-0001-6070-6599,
+email=stephane.ducasse@inria.fr,
+]
+
+\address[1]{Evref,  Inria, CNRS, Centrale Lille, UMR 9189 CRIStAL, Park Plaza, Parc scientifique de la Haute-Borne, 40 Av. Halley Bât A, 59650 Villeneuve-d’Ascq, France}
+\address[2]{Univ. Lille, Inria, CNRS, Centrale Lille, UMR 9189 CRIStAL, Park Plaza, Parc scientifique de la Haute-Borne, 40 Av. Halley Bât A, 59650 Villeneuve-d’Ascq, France}
+
+
+%%
+%% The abstract is a short summary of the work to be presented in the
+%% article.
+% \begin{abstract}
+
+% \end{abstract}
+
+%%
+%% Keywords. The author(s) should pick words that accurately describe
+%% the work being presented. Separate the keywords with commas.
+\begin{keywords}
+  Pharo\sep
+  Method Proxies \sep
+  Coypu \sep
+  on-the-fly music programming \sep
+  
+\end{keywords}
+
+%%
+%% This command processes the author and affiliation and title
+%% information and builds the first part of the formatted document.
+\maketitle
+
+
+\section{Introduction}\label{sec:intro}
+
+This paper introduces the Phizura Playground, a tool that extends the Pharo Playground with the capability to record the code written and evaluated within it. The recording system is implemented using Method Proxies \cite{Jord24b}.
+
+The Phizura Playground has been designed to work with Coypu\cite{Cipr25a}, a library and dialect for on-the-fly music programming within the Pharo environment. Coypu enables live coding performances in which musical structures are generated and modified interactively.
+
+Capturing a musical performance without recording the audio output into large files has been a challenge since the early versions of Coypu. A first recording mechanism was implemented by Redwane Engels during an internship, and was demonstrated at ESUG 2024 in Lille.
+
+This initial solution relied on the Pharo Announcer and Announcement classes, which implement the observer design pattern. Despite working reliably, this approach required intrusive modifications to the Coypu codebase and made it harder to extend the system with new behaviors.
+In recent months, we have reimplemented the recorder using Method Proxies. 
+This redesign removes instrumentation from the system and provides a more flexible framework for extending live coding performances.
+
+
+%Copy what is it more in details
+
+\section{Objectives}
+While developing Coypu, we observed that the Pharo language and environment provide the means to easily record the code written and evaluated during a musical performance. This feature is novel in the live coding community and allows long performances to be stored in very small text files. These recordings can then be replayed by other musicians using the same audio server \cite{Cipr25b} and sound synthesis setup, or with a different \textit{orchestra}\footnote{We use the term orchestra denotes the set of sound synthesis definitions, instruments, and audio effects used to render a score, following Csound terminology.}.
+Such lightweight text files enable easy sharing between users and allow concerts to be reproduced even in the absence of the human performer.
+
+We initially implemented a recording mechanism in Coypu based on Announcers and Announcements. However, this solution was intrusive and tightly coupled to the Coypu codebase, making it difficult to extend and maintain, although it functioned as expected.
+
+To address these limitations, we reimplemented the recorder using Method Proxies. This approach cleanly separates instrumentation from performance-related methods, resulting in a more modular and extensible design.
+
+\section{Design and Implementation}
+
+
+\section{Conclusion}
+Using Method Proxies to implement a recorder for live coding performances in Coypu required only a small number of classes and methods, and was achieved without modifying the Coypu codebase.
+The recorder captures every expression evaluated in the Playground, which opens up possibilities beyond music. Any live coding practice conducted within a Pharo Playground can be recorded with the same mechanism, including, for example, graphics rendered with Bloc. The tool can equally serve as a general prototyping recorder, capturing the sequence of evaluations made during an exploratory session in Pharo. The library ships with a test suite and integrates without issues into the existing environment.
+Future work will focus on exposing a simpler API within the Phizura package, allowing users to extend the instrumentation layer. This will enable the definition of custom actions triggered either by evaluated expressions or by specific methods within a user's own library, giving live coders finer control over what is captured and how it is processed.
+
+
+%%
+%% Define the bibliography file to be used
+
+
+\bibliography{rmod,others}
+
+%%
+%% If your work has an appendix, this is the place to put it.
+\appendix
+
+
+\end{document}
+
+%%
+%% End of file

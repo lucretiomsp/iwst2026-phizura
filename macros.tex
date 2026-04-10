@@ -1,0 +1,162 @@
+\usepackage[T1]{fontenc} % for pipe symbol |
+\usepackage[utf8]{inputenc} % for french accents
+\usepackage{ifthen}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{multirow}
+\usepackage{array} % for aligning table columns
+\usepackage{arydshln} % for dashed lines in tables
+\usepackage[many]{tcolorbox} % for bordered theorem boxes
+
+\usepackage{xspace}
+\usepackage{xcolor}
+\usepackage[normalem]{ulem} 			% \sout macro
+\usepackage{amsmath,amsfonts}
+
+\usepackage{caption} % for subfigures
+\usepackage{subcaption} % for subfigures
+
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}p{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}p{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}p{#1}}
+
+\newboolean{showcomments}
+\setboolean{showcomments}{true}
+% \setboolean{showcomments}{true}
+
+
+% ********************************************************************* 
+% Revisions and comments Macros
+% ********************************************************************* 
+	
+\ifthenelse{\boolean{showcomments}}
+{
+	\newcommand{\nb}[3]{
+		{\colorbox{#2}{\bfseries\sffamily\scriptsize\textcolor{white}{#1}}}
+		{\textcolor{#2}{\sf\small$\blacktriangleright$\textit{#3}$\blacktriangleleft$}}}
+	 \newcommand{\version}{\emph{\scriptsize$-$Id$-$}}
+	\newcommand{\bnote}[2]{\fbox{\color{blue}\bfseries\sffamily\scriptsize#1}
+    	{\color{blue}\sf\small$\blacktriangleright$\textit{#2}$\blacktriangleleft$}}
+	\newcommand{\old}[1]{{\color{gray}\sout{#1}}} % old to be removed
+	\newcommand{\del}[1]{\old{#1}} % please remove
+	\newcommand{\ins}[1]{{\textcolor{blue}{\uline{#1}}}} % please insert	
+	\newcommand{\ugh}[1]{{\textcolor{red}{\uwave{#1}}}} % please rephrase	
+	\newcommand{\chg}[2]{{\textcolor{red}{\sout{#1}}}{\ra}\textcolor{blue}{\uline{#2}}} % please change
+	\newcommand{\here}{\bnote{***}{CONTINUE HERE}} 
+	\newcommand{\fix}[1]{\bnote{FIX}{#1}}
+}{
+	\newcommand{\bnote}[2]{}
+	\newcommand{\nb}[3]{}
+	\newcommand{\old}[1]{}
+	\newcommand{\del}[1]{}
+	\newcommand{\ins}[1]{}
+	\newcommand{\ugh}[1]{}
+	\newcommand{\chg}[2]{}
+	\newcommand{\here}{}
+	\newcommand{\fix}[1]{}
+} 
+
+\newcommand{\hide}[1]{}
+
+
+
+
+%---% add your own macros 
+\newcommand{\np}[1]{\nb{palumbon}{orange}{#1}}
+\newcommand{\sd}[1]{\nb{Stephane}{red}{#1}}
+\newcommand{\sj}[1]{\nb{Sebas}{teal}{#1}}
+\newcommand{\sebas}[1]{\nb{Sebas}{teal}{#1}}
+\newcommand{\gp}[1]{\nb{Guille}{violet}{#1}}
+%olive
+%---
+
+
+
+
+
+\graphicspath{{figures/}{newFigures/}}
+%%% 
+
+
+\newcommand{\figref}[1]{Figure~\ref{fig:#1}}
+\newcommand{\figlabel}[1]{\label{fig:#1}}
+% \newcommand{\tabref}[1]{Table~\ref{tab:#1}}
+\newcommand{\layout}[1]{#1}
+\newcommand{\commented}[1]{}
+\newcommand{\secref}[1]{Section \ref{sec:#1}}
+\newcommand{\appref}[1]{Appendix \ref{sec:#1}}
+\newcommand{\seclabel}[1]{\label{sec:#1}}
+
+%\newcommand{\ct}[1]{\textsf{#1}}
+\newcommand{\stCode}[1]{\textsf{#1}}
+\newcommand{\stMethod}[1]{\textsf{#1}}
+%\newcommand{\sep}{\texttt{>>}\xspace}
+\newcommand{\stAssoc}{\texttt{->}\xspace}
+
+\newcommand{\stBar}{$\mid$}
+\newcommand{\stSelector}{$\gg$}
+\newcommand{\ret}{\^{}}
+\newcommand{\msup}{$>$}
+%\newcommand{\ret}{$\uparrow$\xspace}
+
+\newcommand{\myparagraph}[1]{\noindent\textbf{#1.}}
+\newcommand{\eg}{\emph{e.g.,}\xspace}
+\newcommand{\ie}{\emph{i.e.,}\xspace}
+\newcommand{\etal}{\emph{et al.,}\xspace}
+\newcommand{\ct}[1]{{\textsf{#1}}\xspace}
+
+
+\newenvironment{code}
+    {\begin{alltt}\sffamily}
+    {\end{alltt}\normalsize}
+
+\newcommand{\defaultScale}{0.55}
+\newcommand{\pic}[3]{
+   \begin{figure}[h]
+   \begin{center}
+   \includegraphics[scale=\defaultScale]{#1}
+   \caption{#2}
+   \label{#3}
+   \end{center}
+   \end{figure}
+}
+
+\newcommand{\twocolumnpic}[3]{
+   \begin{figure*}[!ht]
+   \begin{center}
+   \includegraphics[scale=\defaultScale]{#1}
+   \caption{#2}
+   \label{#3}
+   \end{center}
+   \end{figure*}}
+
+\newcommand{\infe}{$<$}
+\newcommand{\supe}{$\rightarrow$\xspace}
+\newcommand{\di}{$\gg$\xspace}
+\newcommand{\adhoc}{\textit{ad-hoc}\xspace}
+
+\usepackage{url}            
+\makeatletter
+\def\url@leostyle{%
+  \@ifundefined{selectfont}{\def\UrlFont{\sf}}{\def\UrlFont{\small\sffamily}}}
+\makeatother
+% Now actually use the newly defined style.
+\urlstyle{leo}
+
+% --- Defining boxes (tcolorbox)
+\definecolor{main}{HTML}{828282}    % setting main color to be used
+\definecolor{sub}{HTML}{E0E0E0}     % setting sub color to be used
+
+\tcbset{
+    sharp corners,
+    colback = white,
+    before skip = 0.2cm,    % add extra space before the box
+    after skip = 0.5cm      % add extra space after the box
+}                           % setting global options for tcolorbox
+
+\newtcolorbox{cbox}{
+    enhanced, % for a fancier setting,
+    boxrule = 0pt, % clearing the default rule
+    borderline = {0.75pt}{0pt}{main}, % outer line
+    borderline = {0.75pt}{2pt}{sub} % inner line
+}
