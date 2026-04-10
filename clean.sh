@@ -1,0 +1,1 @@
+rm -rf *.aux  *.out  *.log  *.synctex.gz *.blg  *.bbl  *.toc  *.fdb_latexmk  *.fls  *.lof  *.lot  *.maf  *.brf  *.mtc  *.synctex *.abs *.synctex *.xmpdata *.xmpi
