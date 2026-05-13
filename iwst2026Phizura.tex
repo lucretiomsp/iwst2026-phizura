@@ -87,7 +87,7 @@ email=stephane.ducasse@inria.fr,
 %% The abstract is a short summary of the work to be presented in the
 %% article.
 \begin{abstract}
-XXX
+Live coding is a performance practice in which artists write and modify code in real time to generate music. A key challenge is capturing a performance for later replay, sharing, or analysis without resorting to audio recording. This paper presents Phizura, a recording tool for on-the-fly music performances conducted with Coypu, a Pharo-based library and dialect for live music programming. Phizura leverages Method Proxies, a safe and fast message-passing control library, to non-intrusively intercept Playground evaluations and keystrokes during a performance. The recorded data, timestamped expressions and input events, can later be emitted as executable Pharo code that faithfully replays the performance with the original timing. We describe the architecture of Phizura, detail how Method Proxies enable a clean separation between recording logic and the Coypu codebase, and compare the approach to a previous Announcer-based implementation.
 \end{abstract}
 
 %%
@@ -105,9 +105,6 @@ XXX
 %% information and builds the first part of the formatted document.
 \maketitle
 
-\section{Abstract}
-Live coding is a performance practice in which artists write and modify code in real time to generate music. A key challenge is capturing a performance for later replay, sharing, or analysis without resorting to audio recording. This paper presents Phizura, a recording tool for on-the-fly music performances conducted with Coypu, a Pharo-based library and dialect for live music programming. Phizura leverages Method Proxies, a safe and fast message-passing control library, to non-intrusively intercept Playground evaluations and keystrokes during a performance. The recorded data, timestamped expressions and input events, can later be emitted as executable Pharo code that faithfully replays the performance with the original timing. We describe the architecture of Phizura, detail how Method Proxies enable a clean separation between recording logic and the Coypu codebase, and compare the approach to a previous Announcer-based implementation.
-
 
 
 \section{Introduction}\label{sec:intro}
@@ -124,13 +121,12 @@ This paper presents the design and implementation of Phizura, shows how Method P
 
 \subsection{Coypu: programming music on-the-fly with Pharo}
 
-Coypu\cite{Cipr25c} is a library and domain-specific dialect for live music programming within the Pharo environment. It acts as a client for an audio server, which can be either internal (a Phausto\cite{Cipr24b} DSP running within Pharo) or an external OSC-capable application, typically SuperCollider via the SuperDirt engine, or a MIDI device.
+Coypu\cite{Cipr25c} is a library and domain-specific dialect for live music programming within the Pharo environment. It acts as a client for an audio server, which can be either internal (a Phausto\cite{Cipr24b} DSP running within Pharo) or an external OSC-capable\footnote{Open Sound Control (OSC) is a protocol for real-time communication between multimedia devices and software, typically transmitted over UDP, \url{https://opensoundcontrol.stanford.edu}.}application, typically SuperCollider via the SuperDirt engine, or a MIDI device.
 A performer works in a Pharo Playground, writing expressions that define rhythmic and melodic patterns and assign them to named instruments. Once evaluated, these patterns begin playing immediately. From that point on, the performer reshapes the music in real time: modifying patterns, muting or soloing individual voices, swapping instruments, and layering new material over what is already running. Every evaluation hits the running output immediately. The performance is shaped by what gets evaluated, when, and in what order and that is exactly what Phizura records.
 
 \subsection{Method Proxies: dynamic method interception in Pharo}
 Method Proxies\cite{Mont24} is a message-passing control library for Pharo that lets you dynamically instrument any method to run user-defined actions before and after its execution. The idea is simple: you tell the framework which method you want to intercept, and you hand it a handler that says what to do around it.
-
-A handler is an instance of a subclass of \texttt{MpHandler}. It defines two hooks: \texttt{beforeExecutionWithReceiver:arguments:}, which fires right before the original method runs, and \texttt{afterExecutionWithReceiver:arguments:returnValue:}, which fires after it returns. That is all the user needs to care about --- everything else is managed under the hood.
+This handler\footnote{An instance of a subclass of \texttt{MpHandler}.} defines two hooks: \texttt{beforeExecutionWithReceiver:arguments:}, which fires right before the original method runs, and \texttt{afterExecutionWithReceiver:arguments:returnValue:}, which fires after it returns. That is all the user needs to care about --- everything else is managed under the hood.
 Internally, when a method is instrumented, the framework replaces the original compiled method in the method dictionary with a copy of a pre-compiled trap method template. Through literal patching, this trap wires in references to the actual handler and to the original method, which is preserved under a mangled selector. The trap leverages Pharo's stack unwinding mechanism via a marker primitive to guarantee execution of the after-hook without allocating block closures, making it significantly faster than \texttt{ensure:}-based approaches.
 Method Proxies also takes care of the tricky parts. A per-thread meta-level detection mechanism prevents infinite recursion when the instrumentation code itself triggers instrumented methods. Thread safety, non-local returns, exceptions, and clean uninstrumentation are all handled by the framework. The entry point is \texttt{MpMethodProxy}, which manages installing and removing the instrumentation.The users just define what happens before and after, and the result is code that is easier to maintain and extend.
 
@@ -200,10 +196,7 @@ A global variable \texttt{PhiRecorderInstance} holds the active recorder, initia
 
 \section{Code Emission and Replay}
 
-A key feature of Phizura is its ability to emit executable code from recorded data. The \texttt{PhizuraCodeEmitter} class iterates over the record entries and produces Pharo source code that, when evaluated inside a forked block, replays the performance with the original timing.
-
-\subsection{Timing Reconstruction}
-
+A key feature of Phizura is its ability to emit executable code from recorded data. The \texttt{PhizuraCodeEmitter} class iterates over the record entries and produces Pharo source code that, when evaluated inside a forked block, replays the performance with the original timing. 
 The emitter computes the delay between consecutive entries by subtracting their timestamps. Each delay is then expressed as a wait statement in the generated code, so that when the emitted script runs in a forked process, the original temporal structure of the performance is faithfully reconstructed.
 
 \subsection{Emission Modes}
