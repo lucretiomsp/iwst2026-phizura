@@ -189,6 +189,14 @@ Phizura requires a custom Playground to intercept the text that is evaluated whe
 
 \texttt{PhizuraPlaygroundPagePresenter}, a subclass of \texttt{StPlaygroundPagePresenter}, is the central customization point. It defines the method \texttt{doEvaluateAndGoFor:}, which receives the selected text as its argument and evaluates it. This method is one of the two targets instrumented by Method Proxies, and it is where the handler intercepts the expression being evaluated. In addition, this presenter initializes the recorder, registers a \texttt{whenKeyUpDo:} event handler to capture keystrokes, sets up a custom interaction model via \texttt{PhizuraPlaygroundInteractionModel}, and extends the toolbar with five commands: \textit{Phizurear} (toggle recording), \textit{Clean Phizura} (reset the recorder), \textit{Inspect Phizura} (open an inspector on the recorder), \textit{Open MoofLOD} (emit code with OSC messages), and \textit{Open Records} (emit clean performance code).
 
+\begin{figure}[ht!]
+\begin{center}
+   \includegraphics[width=0.75\linewidth]{assets/phizuraBar-screenshot.png}	
+\end{center}
+\caption{The Phizura Playground toolbar with the 5th extra commands.
+\label{fig:phizuraPG-toolbar}}
+\end{figure}
+
 \texttt{PhizuraPlaygroundPage}, a subclass of \texttt{StPlaygroundPage}, overrides \texttt{defaultObjectInspectorClass} to return \texttt{PhizuraPlaygroundPagePresenter}, ensuring the custom presenter is used. \texttt{PhizuraPlaygroundInteractionModel}, a subclass of \texttt{StPlaygroundInteractionModel}, allows binding a custom \texttt{doItReceiver}, giving the Playground page presenter access to itself as the evaluation context.
 
 A global variable \texttt{PhiRecorderInstance} holds the active recorder, initialized when the Phizura Playground opens. The Phizura Playground is accessible from the Pharo world menu and can be opened programmatically via \texttt{PhizuraPlayground open}.
