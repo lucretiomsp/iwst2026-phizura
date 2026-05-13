@@ -128,7 +128,7 @@ A performer works in a Pharo Playground, writing expressions that define rhythmi
 Method Proxies\cite{Mont24} is a message-passing control library for Pharo that lets you dynamically instrument any method to run user-defined actions before and after its execution. The idea is simple: you tell the framework which method you want to intercept, and you hand it a handler that says what to do around it.
 This handler\footnote{An instance of a subclass of \texttt{MpHandler}.} defines two hooks: \texttt{beforeExecutionWithReceiver:arguments:}, which fires right before the original method runs, and \texttt{afterExecutionWithReceiver:arguments:returnValue:}, which fires after it returns. That is all the user needs to care about --- everything else is managed under the hood.
 Internally, when a method is instrumented, the framework replaces the original compiled method in the method dictionary with a copy of a pre-compiled trap method template. Through literal patching, this trap wires in references to the actual handler and to the original method, which is preserved under a mangled selector. The trap leverages Pharo's stack unwinding mechanism via a marker primitive to guarantee execution of the after-hook without allocating block closures, making it significantly faster than \texttt{ensure:}-based approaches.
-Method Proxies also takes care of the tricky parts. A per-thread meta-level detection mechanism prevents infinite recursion when the instrumentation code itself triggers instrumented methods. Thread safety, non-local returns, exceptions, and clean uninstrumentation are all handled by the framework. The entry point is \texttt{MpMethodProxy}, which manages installing and removing the instrumentation.The users just define what happens before and after, and the result is code that is easier to maintain and extend.
+Method Proxies also takes care of the tricky parts. A per-thread meta-level detection mechanism prevents infinite recursion when the instrumentation code itself triggers instrumented methods. Thread safety, non-local returns, exceptions, and clean instrumentation are all handled by the framework. The entry point is \texttt{MpMethodProxy}, which manages installing and removing the instrumentation.The users just define what happens before and after, and the result is code that is easier to maintain and extend.
 
 \section{Previous Approach: Announcers and Announcements}
 The first recording mechanism for Coypu was implemented by Redwane Engels during an internship and demonstrated at ESUG 2024 in Lille. It relied on Pharo's \texttt{Announcer} and \texttt{Announcement} classes, which implement the observer design pattern.
@@ -187,7 +187,7 @@ Phizura requires a custom Playground to intercept the text that is evaluated whe
 
 \texttt{PhizuraPlaygroundPresenter}, a subclass of \texttt{StPlaygroundPresenter}, manages the window lifecycle. It ensures that recording stops when the window is closed and creates instances of \texttt{PhizuraPlaygroundPage} instead of the default page.
 
-\texttt{PhizuraPlaygroundPagePresenter}, a subclass of \texttt{StPlaygroundPagePresenter}, is the central customization point. It defines the method \texttt{doEvaluateAndGoFor:}, which receives the selected text as its argument and evaluates it. This method is one of the two targets instrumented by Method Proxies, and it is where the handler intercepts the expression being evaluated. In addition, this presenter initializes the recorder, registers a \texttt{whenKeyUpDo:} event handler to capture keystrokes, sets up a custom interaction model via \texttt{PhizuraPlaygroundInteractionModel}, and extends the toolbar with five commands: Phizurear (toggle recording), Clean Phizura (reset the recorder), Inspect Phizura (open an inspector on the recorder), Open MoofLOD (emit code with OSC messages), and Open Records (emit clean performance code).
+\texttt{PhizuraPlaygroundPagePresenter}, a subclass of \texttt{StPlaygroundPagePresenter}, is the central customization point. It defines the method \texttt{doEvaluateAndGoFor:}, which receives the selected text as its argument and evaluates it. This method is one of the two targets instrumented by Method Proxies, and it is where the handler intercepts the expression being evaluated. In addition, this presenter initializes the recorder, registers a \texttt{whenKeyUpDo:} event handler to capture keystrokes, sets up a custom interaction model via \texttt{PhizuraPlaygroundInteractionModel}, and extends the toolbar with five commands: \textit{Phizurear} (toggle recording), \textit{Clean Phizura} (reset the recorder), \textit{Inspect Phizura} (open an inspector on the recorder), \textit{Open MoofLOD} (emit code with OSC messages), and \textit{Open Records} (emit clean performance code).
 
 \texttt{PhizuraPlaygroundPage}, a subclass of \texttt{StPlaygroundPage}, overrides \texttt{defaultObjectInspectorClass} to return \texttt{PhizuraPlaygroundPagePresenter}, ensuring the custom presenter is used. \texttt{PhizuraPlaygroundInteractionModel}, a subclass of \texttt{StPlaygroundInteractionModel}, allows binding a custom \texttt{doItReceiver}, giving the Playground page presenter access to itself as the evaluation context.
 
@@ -230,8 +230,34 @@ The most directly comparable work is Live Writing by Lee and Essl\cite{Essl14}, 
 
 Another related effort is SHARP\cite{Bowm23}, a Pulsar\footnote{Pulsar (\url{https://pulsar-edit.dev}) is a community-maintained, open-source text editor built on Electron, forked from GitHub's Atom after its discontinuation.} extension that visualizes the history of each instrument a live coder creates, providing an interactive tree-like structure to track how blocks of code evolve over time and to revisit previous states. It addresses the versioning aspect of the creative process. SHARP manages the evaluated expressions but does not capture timing or produce replayable scripts. Phizura and SHARP are complementary: SHARP preserves the structural history of code, while Phizura preserves the temporal performance.
 
+Table~\ref{tab:comparison} summarizes the key differences between the two recording implementations. The most significant advantage of the Method Proxies approach is the complete elimination of coupling between the recording infrastructure and the domain library. In the Announcer-based design, every new recordable event required a two-step modification: first, defining a new \texttt{Announcement} subclass in Coypu, and second, inserting the corresponding announcement firing at the right point in the evaluation pipeline. Over time, this scattered recording logic throughout the codebase, making it increasingly difficult to distinguish Coypu's core musical functionality from the recording mechanism layered on top of it.
 
+\begin{table}[ht]
+\centering
+\caption{Comparison of the Announcer-based and Method Proxies-based recording approaches.}
+\label{tab:comparison}
+\begin{tabular}{lll}
+\toprule
+\textbf{Aspect} & \textbf{Announcer-based} & \textbf{Method Proxies-based} \\
+\midrule
+Coypu modifications & Required at each recordable site & None \\
+Coupling & Tight (shared announcement types) & None (external instrumentation) \\
+Adding new events & Modify Coypu + define announcement & Intercept target method \\
+Removal & Must revert Coypu changes & Uninstall instrumentation \\
+Keystroke capture & Not supported & Supported \\
+Code emission & Not supported & Two modes (Performance, MoofLOD) \\
+\bottomrule
+\end{tabular}
+\end{table}
 
+With Method Proxies, the instrumentation is installed externally on existing methods, and the handler receives the method's arguments reflectively. The original methods are entirely unaware of the instrumentation. Recording a new kind of event only requires intercepting the relevant method. No Coypu code needs to change. Removing the recording capability is equally straightforward: uninstalling the instrumentation restores the original methods, leaving no trace in the system.
+
+\section{Generality beyond music}
+This instrumentation targets the Playground's evaluation methods, not any Coypu-specific code. As a result, any expression evaluated in a Phizura Playground is captured\footnote{Whether the code produces sound, generates visuals, manipulates data, or does anything else entirely.}, making the approach entirely generic.
+This opens several concrete uses beyond music. In the domain of visual live coding, performances using Bloc or Roassal for real-time graphics could be recorded and replayed with the same tool, without any modification to Phizura.
+Beyond live performance, Phizura can serve as a general-purpose prototyping recorder. Developers routinely explore APIs, test hypotheses, and prototype solutions through sequences of small evaluations. Phizura can capture these sessions as timestamped scripts, providing a lightweight form of session recording that preserves not just what was tried, but in what order and at what pace. Think documenting design decisions, reviewing your own process, or sharing a discovery workflow with other users.
+
+A third application is pedagogical. An instructor demonstrating a concept in a Pharo Playground could record the session and distribute it as a small text file. Students would then replay the demonstration at their own pace, seeing each evaluation appear with the original timing. Unlike a video recording, the replayed script is live code: students can pause it, modify the expressions, and explore variations. Unlike a static code listing, it preserves the tem
 
 %%
 %% Define the bibliography file to be used
