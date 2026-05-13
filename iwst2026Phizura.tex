@@ -227,6 +227,58 @@ ep playFor: 128 bars.
 
 The second mode, accessed through \texttt{emitMoofLODCode}, extends the performance code with OSC-compatible messages. After each expression, a string representation is sent via \texttt{toLocal: 'evaluatedCommand'}. Keystroke events emit the key value and cursor coordinates. This mode enables external visualization tools or network-based synchronization during replay.
 
+
+\begin{lstlisting}[label={lst:emitted-mooflod},caption={Example of emitted MoofLOD code}]
+[
+‘1’ toLocal: 'keyPressed'.
+0.269059 seconds wait.
+'6' toLocal: 'keyPressed'.
+0.06929 seconds wait.
+'SPACE' toLocal: 'keyPressed'.
+0.364536 seconds wait.
+'P' toLocal: 'keyPressed'.
+0.231215 seconds wait.
+'L' toLocal: 'keyPressed'.
+0.1328 seconds wait.
+'E' toLocal: 'keyPressed'.
+0.201525 seconds wait.
+'N' toLocal: 'keyPressed'.
+0.118029 seconds wait.
+'A' toLocal: 'keyPressed'.
+0.551842 seconds wait.
+'SPACE' toLocal: 'keyPressed'.
+0.221894 seconds wait.
+'T' toLocal: 'keyPressed'.
+0.217805 seconds wait.
+'O' toLocal: 'keyPressed'.
+0.326003 seconds wait.
+'SEMICOLON' toLocal: 'keyPressed'.
+0.03263 seconds wait.
+'SHIFT_L' toLocal: 'keyPressed'.
+0.140359 seconds wait.
+'SPACE' toLocal: 'keyPressed'.
+1.11659 seconds wait.
+'3' toLocal: 'keyPressed'.
+0.026661 seconds wait.
+'SHIFT_L' toLocal: 'keyPressed'.
+0.255572 seconds wait.
+'K' toLocal: 'keyPressed'.
+0.143932 seconds wait.
+'I' toLocal: 'keyPressed'.
+0.083332 seconds wait.
+'C' toLocal: 'keyPressed'.
+0.284781 seconds wait.
+'K' toLocal: 'keyPressed'.
+0.200892 seconds wait.
+'PERIOD' toLocal: 'keyPressed'.
+0.164829 seconds wait.
+16 plena to: #kick.
+'16 plena to: #kick.' toLocal: 'evaluatedCommand'.
+0.081839 seconds wait.
+] fork.
+\end{lstlisting}
+
+
 Both modes rely on double dispatch on the record entry side, through the methods \texttt{emitPerformanceCodeOnEmitter:onStream:} and \texttt{emitMoofLODCodeOnEmitter:onStream:}. This makes it straightforward to add new emission formats without modifying the record entry classes or the emitter's core iteration logic.
 
 
