@@ -136,7 +136,10 @@ MethodProxies~\cite{Jord24b} is a per-method instrumentation library for Pharo t
 \textbf{It leaves the source code of the instrumented application intact.}
 The library exposes a stratified architecture in which the user-facing API is reduced to subclassing a handler class (\ct{MpHandler}) and overriding a small set of hooks; the framework manages the underlying instrumentation mechanics. The same handler can be associated with several proxied methods, which allows information to be aggregated across distinct call sites without duplicating logic.
 
-Internally, each instrumented method is replaced in its method dictionary by a precompiled \emph{trap method} that orchestrates the execution of the hooks. To avoid runtime compilation, MethodProxies ships a small set of precompiled trap prototypes --- one per method arity --- that are copied at installation time and patched with three literals: the handler, the deactivator used to react to stack unwinds, and the selector under which the original method is re-installed as a hidden entry of the same method dictionary. Because the trap remains a regular \ct{CompiledMethod}, it is JIT-compiled by the virtual machine and the forwarding send to the original becomes monomorphic, which keeps the per-call overhead low. Stack unwinds are handled through the VM's built-in unwind mechanism rather than through the standard \ct{ensure:} construct, avoiding the allocation of block closures and the associated stack reification cost.
+Internally, each instrumented method is replaced in its method dictionary by a precompiled \emph{trap method} that orchestrates the execution of the hooks.
+To avoid runtime compilation, MethodProxies ships a small set of precompiled trap prototypes --- one per method arity --- that are copied at installation time and literal patched 
+Because the trap remains a regular \ct{CompiledMethod}, it is JIT-compiled and optimized by the virtual machine as any other method.
+Stack unwinds are handled through the Pharo's built-in unwind mechanism rather than through the standard \ct{ensure:} construct, avoiding the allocation of block closures and the associated stack reification cost.
 
 MethodProxies also guarantees a number of properties that make it suitable for instrumenting arbitrary parts of the system, including the language kernel. It is \emph{meta-safe} --- instrumented methods can be invoked from within a handler without re-entering the instrumentation, since the active process is marked as meta-level during hook execution and the trap is bypassed while this flag is set.
 It is \emph{unwind-safe}, supports dynamic installation and deinstallation at run time, and reports an average overhead of approximately 1.5~$\times$ with the meta-safety mechanism itself adding only about 9\%~\cite{Jord24b}.
@@ -155,149 +158,7 @@ Extending it to capture additional events, such as keystrokes, cursor positions,
 And every modification to the evaluation pipeline risked breaking or silently bypassing the recording hooks.
 These limitations motivated the redesign using Method Proxies, which externalizes the instrumentation entirely and it does not require modifying the source code.
 
-\section{Design and Implementation}
-
-Phizura is organized in three packages: \texttt{Phizura} (core recording and emission logic), \texttt{Phizura-Playground} (UI integration), and \texttt{Phizura-Tests} (test suite). The architecture addresses four concerns: instrumentation, recording, code emission, and UI integration.
-
-\subsection{Instrumentation}
-
-At the core of Phizura's design is a small class hierarchy for instrumentation. \texttt{PhizuraInstrumentor} is an abstract class that manages a collection of \texttt{MpMethodProxy} instances and a shared \texttt{PhizuraHandler}. Subclasses define which methods to instrument by implementing \texttt{initializeMethodProxies}.
-
-\begin{lstlisting}[label={lst:instrumentor-initialize},caption={Initialization of PhizuraInstrumentor}]
-PhizuraInstrumentor >> initialize
-    super initialize.
-    instrumentationHandler := PhizuraHandler
-        onRecorder: recorder.
-    self initializeProxyVariables.
-    self initializeMethodProxies
-\end{lstlisting}
-
-The concrete subclass \texttt{PhizuraEvaluationInstrumentor} instruments two methods: \texttt{SpCodeSelectionCommand>>\#evaluate:andDo:}, the standard Pharo Playground evaluation command, and \texttt{PhizuraPlaygroundPagePresenter>>\#doEvaluateAndGoFor:}, the Phizura Playground's own evaluation path. Both share the same handler instance, so all evaluations are recorded uniformly regardless of which path triggers them.
-
-The handler itself, \texttt{PhizuraHandler}, is a subclass of \texttt{MpHandler} and constitutes the only user-defined hook in the entire system. It implements a single method:
-
-\begin{lstlisting}[label={lst:handler-before},caption={PhizuraHandler before-execution hook}]
-PhizuraHandler >> beforeExecutionWithReceiver:
-    anObject arguments: anArrayOfArguments
-    | argument |
-    argument := anArrayOfArguments first.
-    recorder addRecord:
-        (PhizuraEvaluationRecordEntry new
-            time: DateAndTime now;
-            expression: argument;
-            cursorPosition:
-                playgroundPage text cursorPosition;
-            yourself)
-\end{lstlisting}
-
-The handler extracts the first argument of the intercepted method, which is the expression string being evaluated, and creates a record entry with three pieces of information: the current timestamp, the expression text, and the cursor position in the editor. No Coypu method is modified, subclassed, or even referenced. The instrumentation is purely additive.
-
-\subsection{Recording}
-
-Phizura captures two kinds of events, modeled by a small class hierarchy rooted at \texttt{PhizuraBasicRecordEntry}. \texttt{PhizuraEvaluationRecordEntry} stores a code expression, a timestamp, and the cursor position, corresponding to Playground evaluations. \texttt{PhizuraKeyEventRecordEntry} stores a keyboard key, a timestamp, and the cursor position, captured via a \texttt{whenKeyUpDo:} event handler on the Playground's text presenter, independently of Method Proxies. Both entry types participate in double dispatch for code emission (see Section~5).
-
-\texttt{PhizuraRecorder} ties the system together. It holds a collection of record entries, a reference to the instrumentor, and a boolean recording flag. When \texttt{record} is called, it creates a \texttt{PhizuraEvaluationInstrumentor}, installs the proxies, and sets the flag. When \texttt{stopRecording} is called, it uninstalls all proxies. A guard \texttt{isRecording ifTrue:} ensures that evaluations outside a recording session are not captured. For emergency recovery, a class-side \texttt{forceUnrecord} method uninstalls all proxies in the image.
-
-\subsection{The Phizura Playground}
-
-Phizura requires a custom Playground to intercept the text that is evaluated when the user presses Cmd+D (Do it). The standard Pharo Playground does not expose the evaluated expression in a way that can be captured externally. The expression text flows through internal methods that are not designed for observation. To solve this, Phizura provides its own Playground, built by subclassing the standard Pharo Playground classes at four points.
-
-\texttt{PhizuraPlaygroundPresenter}, a subclass of \texttt{StPlaygroundPresenter}, manages the window lifecycle. It ensures that recording stops when the window is closed and creates instances of \texttt{PhizuraPlaygroundPage} instead of the default page.
-
-\texttt{PhizuraPlaygroundPagePresenter}, a subclass of \texttt{StPlaygroundPagePresenter}, is the central customization point. It defines the method \texttt{doEvaluateAndGoFor:}, which receives the selected text as its argument and evaluates it. This method is one of the two targets instrumented by Method Proxies, and it is where the handler intercepts the expression being evaluated. In addition, this presenter initializes the recorder, registers a \texttt{whenKeyUpDo:} event handler to capture keystrokes, sets up a custom interaction model via \texttt{PhizuraPlaygroundInteractionModel}, and extends the toolbar with five commands: \textit{Phizurear} (toggle recording), \textit{Clean Phizura} (reset the recorder), \textit{Inspect Phizura} (open an inspector on the recorder), \textit{Open MoofLOD} (emit code with OSC messages), and \textit{Open Records} (emit clean performance code).
-
-\begin{figure}[ht!]
-\begin{center}
-   \includegraphics[width=0.75\linewidth]{assets/phizuraBar-screenshot.png}	
-\end{center}
-\caption{The Phizura Playground toolbar with the 5th extra commands.
-\label{fig:phizuraPG-toolbar}}
-\end{figure}
-
-\texttt{PhizuraPlaygroundPage}, a subclass of \texttt{StPlaygroundPage}, overrides \texttt{defaultObjectInspectorClass} to return \texttt{PhizuraPlaygroundPagePresenter}, ensuring the custom presenter is used. \texttt{PhizuraPlaygroundInteractionModel}, a subclass of \texttt{StPlaygroundInteractionModel}, allows binding a custom \texttt{doItReceiver}, giving the Playground page presenter access to itself as the evaluation context.
-
-A global variable \texttt{PhiRecorderInstance} holds the active recorder, initialized when the Phizura Playground opens. The Phizura Playground is accessible from the Pharo world menu and can be opened programmatically via \texttt{PhizuraPlayground open}.
-
-
-\section{Code Emission and Replay}
-
-A key feature of Phizura is its ability to emit executable code from recorded data. The \texttt{PhizuraCodeEmitter} class iterates over the record entries and produces Pharo source code that, when evaluated inside a forked block, replays the performance with the original timing. 
-The emitter computes the delay between consecutive entries by subtracting their timestamps. Each delay is then expressed as a wait statement in the generated code, so that when the emitted script runs in a forked process, the original temporal structure of the performance is faithfully reconstructed.
-
-\subsection{Emission Modes}
-
-Phizura supports two code emission modes, implemented via double dispatch between the emitter and the record entries.
-
-The first mode, accessed through \texttt{emitPerformanceCode}, produces clean, executable Coypu code. Keystroke events are filtered out and only evaluation records are emitted, separated by the appropriate delays. The resulting script is self-contained: anyone with the same Coypu setup and sound definitions can evaluate it to hear the exact performance.
-
-\begin{lstlisting}[label={lst:emitted-performance},caption={Example of emitted performance code}]
-[
-ep := EcoPhausto new.
-1.0 seconds wait.
-ep playFor: 128 bars.
-1.5 seconds wait.
-#(1 0 0 1 0 0 0 0) asSeq to: #kick.
-1.8 seconds wait.
-#rumba asRhythm to: #conga.
-] fork.
-\end{lstlisting}
-
-The second mode, accessed through \texttt{emitMoofLODCode}, extends the performance code with OSC-compatible messages. After each expression, a string representation is sent via \texttt{toLocal: 'evaluatedCommand'}. Keystroke events emit the key value and cursor coordinates. This mode enables external visualization tools or network-based synchronization during replay.
-
-
-\begin{lstlisting}[label={lst:emitted-mooflod},caption={Example of emitted MoofLOD code}]
-[
-'1' toLocal: 'keyPressed'.
-0.269059 seconds wait.
-'6' toLocal: 'keyPressed'.
-0.06929 seconds wait.
-'SPACE' toLocal: 'keyPressed'.
-0.364536 seconds wait.
-'P' toLocal: 'keyPressed'.
-0.231215 seconds wait.
-'L' toLocal: 'keyPressed'.
-0.1328 seconds wait.
-'E' toLocal: 'keyPressed'.
-0.201525 seconds wait.
-'N' toLocal: 'keyPressed'.
-0.118029 seconds wait.
-'A' toLocal: 'keyPressed'.
-0.551842 seconds wait.
-'SPACE' toLocal: 'keyPressed'.
-0.221894 seconds wait.
-'T' toLocal: 'keyPressed'.
-0.217805 seconds wait.
-'O' toLocal: 'keyPressed'.
-0.326003 seconds wait.
-'SEMICOLON' toLocal: 'keyPressed'.
-0.03263 seconds wait.
-'SHIFT_L' toLocal: 'keyPressed'.
-0.140359 seconds wait.
-'SPACE' toLocal: 'keyPressed'.
-1.11659 seconds wait.
-'3' toLocal: 'keyPressed'.
-0.026661 seconds wait.
-'SHIFT_L' toLocal: 'keyPressed'.
-0.255572 seconds wait.
-'K' toLocal: 'keyPressed'.
-0.143932 seconds wait.
-'I' toLocal: 'keyPressed'.
-0.083332 seconds wait.
-'C' toLocal: 'keyPressed'.
-0.284781 seconds wait.
-'K' toLocal: 'keyPressed'.
-0.200892 seconds wait.
-'PERIOD' toLocal: 'keyPressed'.
-0.164829 seconds wait.
-16 plena to: #kick.
-'16 plena to: #kick.' toLocal: 'evaluatedCommand'.
-0.081839 seconds wait.
-] fork.
-\end{lstlisting}
-
-Both modes rely on double dispatch on the record entry side, through the methods \texttt{emitPerformanceCodeOnEmitter:onStream:} and \texttt{emitMoofLODCodeOnEmitter:onStream:}. This makes it straightforward to add new emission formats without modifying the record entry classes or the emitter's core iteration logic.
-
-\section{MethodProxies Comparison with the Announcer-based Approach}
+\section{MethodProxies-Based vs. Announcer-Based Approaches}
 
 Table~\ref{tab:comparison} summarizes the key differences between the two recording implementations. The most significant advantage of the Method Proxies approach is the complete elimination of coupling between the recording infrastructure and the domain library. In the Announcer-based design, every new recordable event required a two-step modification: first, defining a new \texttt{Announcement} subclass in Coypu, and second, inserting the corresponding announcement firing at the right point in the evaluation pipeline. Over time, this scattered recording logic throughout the codebase, making it increasingly difficult to distinguish Coypu's core musical functionality from the recording mechanism layered on top of it.
 
@@ -319,7 +180,142 @@ Code emission & Not supported & Two modes (Performance, MoofLOD) \\
 \end{tabular}
 \end{table}
 
-With Method Proxies, the instrumentation is installed externally on existing methods, and the handler receives the method's arguments reflectively. The original methods are entirely unaware of the instrumentation. Recording a new kind of event only requires intercepting the relevant method. No Coypu code needs to change. Removing the recording capability is equally straightforward: uninstalling the instrumentation restores the original methods, leaving no trace in the system.
+With Method Proxies, the instrumentation is installed externally on existing methods, and the handler receives the method's arguments reflectively. The original methods are entirely unaware of the instrumentation. Recording a new kind of event only requires intercepting the relevant method. No Coypu code needs to change.
+Removing the recording capability is equally straightforward: uninstalling the instrumentation restores the original methods, leaving no trace in the system.
+
+In the next section, we will present how we used MethodProxies to implement Phizura.
+
+\section{Phizura: On-the-Fly Music Recording}
+
+Phizura is a music recording for Copyu that captures every code evaluation and produces executable code that replay the music with the same delays.
+Its redesign starts from a single observation: every expression a performer evaluates already passes through a small number of well-defined methods inside the Playground.
+Method Proxies can intercept those methods from the outside, which means the recorder never needs to live inside Coypu.
+The implementation is split across three packages.
+
+\begin{itemize}
+\item \textbf{Phizura} contains the recorder, the instrumentor, and the code emitter.
+\item \textbf{Phizura-Playground} provides a custom Playground that hosts a recording session and surfaces the recorder's controls in its toolbar.
+\item \textbf{Phizura-Tests} holds the test suite.
+\end{itemize}
+
+The rest of this section follows the three responsibilities the system actually carries out: instrumenting the Playground, collecting the events, and exposing the workflow to the performer.
+
+\subsection{Instrumentation}
+
+A single class, \ct{PhizuraEvaluationInstrumentor}, decides which methods to intercept and installs a \ct{MpMethodProxy} on each one.
+The two methods that are invoked during code evaluation methods are instrumented.
+Phizura covers all endpoints of code evaluation and it ensures that every evaluation is captured.
+Both proxies share the same handler instance.
+
+The handler is the only piece of user-defined behavior the system needs.
+It is a subclass of \ct{MpHandler} with a single method:
+
+\begin{lstlisting}[label={lst:handler-before},caption={PhizuraHandler before-execution hook}]
+PhizuraHandler >> beforeExecutionWithReceiver:
+    anObject arguments: anArrayOfArguments
+    | argument |
+    argument := anArrayOfArguments first.
+    recorder addRecord:
+        (PhizuraEvaluationRecordEntry new
+            time: DateAndTime now;
+            expression: argument;
+            cursorPosition:
+                playgroundPage text cursorPosition;
+            yourself)
+\end{lstlisting}
+
+The first argument of either intercepted method is the source string about to be evaluated.
+The handler timestamps it, reads the cursor position from the Playground page, and pushes the result onto the recorder.
+No Coypu class is modified, subclassed, or even mentioned: the instrumentation is entirely external, and uninstalling the proxies leaves the running image in its original state.
+
+\subsection{Recording}
+
+The recorder stores two kinds of events: a \ct{PhizuraEvaluationRecordEntry} for each evaluated expression and a \ct{PhizuraKeyEventRecordEntry} for each keystroke.
+Evaluations are recorded through Method Proxies described above.
+Keystrokes are captured independently from Method Proxies. 
+A single recorder holds the entries in a chronological timeline.
+
+\ct{PhizuraRecorder} ties everything together.
+It owns the list of entries, holds a reference to the instrumentor, and toggles a recording flag.
+Starting a session creates the instrumentor and installs its proxies; stopping a session uninstalls them and clears the flag.
+
+\subsection{The Phizura Playground}
+
+Phizura ships its own Playground because the standard one offers no natural target for Method Proxies: the selected text flows through several layers of Spec machinery without ever passing through a stable method one could hook onto.
+A small custom subclass solves this problem.
+\ct{PhizuraPlaygroundPagePresenter>>doEvaluateAndGoFor:} receives the selected text directly as its argument, which is the shape the handler expects.
+
+The custom Playground is otherwise a thin layer over the standard one, with four subclasses.
+\ct{PhizuraPlaygroundPresenter} substitutes the page class and stops the recorder when the window is closed.
+\ct{PhizuraPlaygroundPagePresenter} is the central piece: it defines the method that the Method Proxies intercept, initializes the recorder, registers the keystroke listener, plugs in a custom interaction model so that the page can act as its own evaluation context, and extends the toolbar with five commands (Figure~\ref{fig:phizuraPG-toolbar}): \textit{Phizurear} toggles recording, \textit{Clean Phizura} resets the recorder, \textit{Inspect Phizura} opens an inspector on the current session, and \textit{Open MoofLOD} and \textit{Open Records} emit the two flavors of replay script discussed in the next section.
+
+\begin{figure}[ht!]
+\begin{center}
+   \includegraphics[width=0.75\linewidth]{assets/phizuraBar-screenshot.png}
+\end{center}
+\caption{The Phizura Playground toolbar with the five extra commands.
+\label{fig:phizuraPG-toolbar}}
+\end{figure}
+
+A global variable, \ct{PhiRecorderInstance}, holds the active recorder.
+It is initialized when the Phizura Playground opens, either from the Pharo world menu or via \ct{PhizuraPlayground open}.
+
+\subsection{Code Emission and Replay}
+
+A session ends with a chronologically ordered list of timestamped entries in the recorder.
+Replay turns that list back into something the image can run.
+The job is done by \ct{PhizuraCodeEmitter}, which walks the entries in order, subtracts each pair of consecutive timestamps to recover the original delays, and emits Pharo source separated by \ct{seconds wait} statements.
+The whole script is wrapped in a forked block so that the waits do not freeze the UI process, and so that the performer can launch the replay from the same Playground that captured the session.
+
+The emitter supports two modes, and the choice between them is made through a double dispatch with the record entries: the emitter asks each entry to render itself, and the entry calls back into the emitter with its own type information.
+New emission formats can therefore be added without touching the entry classes, and new entry types without touching the existing emitter methods.
+
+The first mode, \ct{emitPerformanceCode}, produces a runnable Coypu script.
+Keystroke entries are filtered out and only the evaluations remain, separated by the original delays.
+The result is self-contained: any image with the same Coypu setup can evaluate the script and reproduce the performance verbatim.
+
+\begin{lstlisting}[label={lst:emitted-performance},caption={Example of emitted performance code}]
+[
+ep := EcoPhausto new.
+1.0 seconds wait.
+ep playFor: 128 bars.
+1.5 seconds wait.
+#(1 0 0 1 0 0 0 0) asSeq to: #kick.
+1.8 seconds wait.
+#rumba asRhythm to: #conga.
+] fork.
+\end{lstlisting}
+
+The second mode, \ct{emitMoofLODCode}, extends the performance code with OSC-compatible messages
+Each evaluated expression, keystroke, and cursor position is also signaled.
+The resulting script still reproduces the music, but it now also exposes everything that happened during the session to any OSC-capable consumer, opening the door to live visualizations, second-screen overlays, or synchronization with other tools.
+
+\begin{lstlisting}[label={lst:emitted-mooflod},caption={Example of emitted MoofLOD code (middle elided)}]
+[
+'1' toLocal: 'keyPressed'.
+0.269059 seconds wait.
+'6' toLocal: 'keyPressed'.
+0.06929 seconds wait.
+'SPACE' toLocal: 'keyPressed'.
+0.364536 seconds wait.
+'P' toLocal: 'keyPressed'.
+0.231215 seconds wait.
+'L' toLocal: 'keyPressed'.
+0.1328 seconds wait.
+"... [keystrokes left out] ..."
+'C' toLocal: 'keyPressed'.
+0.284781 seconds wait.
+'K' toLocal: 'keyPressed'.
+0.200892 seconds wait.
+'PERIOD' toLocal: 'keyPressed'.
+0.164829 seconds wait.
+16 plena to: #kick.
+'16 plena to: #kick.' toLocal: 'evaluatedCommand'.
+0.081839 seconds wait.
+] fork.
+\end{lstlisting}
+
+Both modes are implemented on the record entries through \ct{emitPerformanceCodeOnEmitter:onStream:} and \ct{emitMoofLODCodeOnEmitter:onStream:}, completing the double dispatch with the emitter described above and keeping the iteration logic free of any type-specific code.
 
 \section{Related Work}
 
@@ -339,7 +335,7 @@ Beyond live performance, Phizura can serve as a general-purpose prototyping reco
 A third application is pedagogical. An instructor demonstrating a concept in a Pharo Playground could record the session and distribute it as a small text file. Students would then replay the demonstration at their own pace, seeing each evaluation appear with the original timing. Unlike a video recording, the replayed script is live code: students can pause it, modify the expressions, and explore variations. Unlike a video recording, the replayed script is live code: students can pause it, modify the expressions, and explore variations. Unlike a static code listing, it preserves the temporal dimension, the order and rhythm of the instructor's thought process.%%
 
 \subsection{Limitations}
-The current implementation captures Playground evaluations but does not record workspace edits that are not evaluated. A performer may type, delete, and rearrange code extensively before pressing \textit{Cmd+D}; only the final evaluated expression is recorded. The keystroke capture partially addresses this gap by logging individual key events with timestamps and cursor positions, but it does not reconstruct the full editing history in a way that could be replayed as a visual typing sequence. That would require a different approach, closer to what Live Writing\cite{Essl14} provides.
+The current implementation captures Playground evaluations but does not record workspace edits that are not evaluated. A performer may type, delete, and rearrange code extensively before pressing \textit{Cmd+D}; only the final evaluated expression is recorded. The keystroke capture partially addresses this gap by logging individual key events with timestamps and cursor positions, but it does not reconstruct the full editing history in a way that could be replayed as a visual typing sequence. That would require a different approach, closer to what Live Writing\cite{Essl14} provides.\sebas{I dont inderstand why the keystores and timestramps are not enough,}
 
 Timing fidelity depends on the granularity of \texttt{DateAndTime now} and the accuracy of \texttt{seconds wait} during replay. For musical purposes, where consecutive evaluations are typically separated by one to several seconds, this is more than sufficient: the human performer's own timing variability is far larger than any clock imprecision.
 
