@@ -16,8 +16,10 @@
 *.cb2
 .*.lb
 
+# Paper specific files
 main.pdf
 iwst2026Phizura.pdf
+.DS_Store
 
 *.abs
 *.xmpdata
