@@ -67,27 +67,33 @@ email=mspgate@gmail.com,
 ]
 
 
-\author[2]{Sebastian {Jordan Montaño}}[%
+\author[1]{Sebastian {Jordan Montaño}}[%
 orcid=0000-0002-7726-8377,
 email=sebastian.jordan@inria.fr,
-% orcid=0000-0002-7726-8377,
-% url=https://jordanmontt.fr,
+url=https://jordanmontt.fr,
 ]
 
-\author[2]{Stéphane Ducasse}[
+\author[1]{Stéphane Ducasse}[
 orcid=0000-0001-6070-6599,
 email=stephane.ducasse@inria.fr,
 ]
 
-\address[1]{Evref,  Inria, CNRS, Centrale Lille, UMR 9189 CRIStAL, Park Plaza, Parc scientifique de la Haute-Borne, 40 Av. Halley Bât A, 59650 Villeneuve-d’Ascq, France}
-\address[2]{Univ. Lille, Inria, CNRS, Centrale Lille, UMR 9189 CRIStAL, Park Plaza, Parc scientifique de la Haute-Borne, 40 Av. Halley Bât A, 59650 Villeneuve-d’Ascq, France}
+\address[1]{Univ. Lille, Inria, CNRS, Centrale Lille, UMR 9189 CRIStAL, Park Plaza, Parc scientifique de la Haute-Borne, 40 Av. Halley Bât A, 59650 Villeneuve-d’Ascq, France}
 
 
 %%
 %% The abstract is a short summary of the work to be presented in the
 %% article.
 \begin{abstract}
-Live coding is a performance practice in which artists write and modify code in real time to generate music. A key challenge is capturing a performance for later replay, sharing, or analysis without resorting to audio recording. This paper presents Phizura, a recording tool for on-the-fly music performances conducted with Coypu, a Pharo-based library and dialect for live music programming. Phizura leverages Method Proxies, a safe and fast message-passing control library, to non-intrusively intercept Playground evaluations and keystrokes during a performance. The recorded data, timestamped expressions and input events, can later be emitted as executable Pharo code that faithfully replays the performance with the original timing. We describe the architecture of Phizura, detail how Method Proxies enable a clean separation between recording logic and the Coypu codebase, and compare the approach to a previous Announcer-based implementation.
+Live coding is a performance practice in which artists write and modify code in real time to generate music.
+\sebas{A word about the artistic part of live coding. It is important to say this because later we say that phizura needs to generate the same code as it was written for artistic reasons.}
+A key challenge is capturing a performance for later replay, sharing, or analysis without resorting to audio recording.
+\sebas{What is "capturing a performance". It will be better to say that the challenge is to capture idiomatically the evaluations of phizura to later be able to replay the live performance.}
+This paper presents Phizura, a recording tool for on-the-fly music performances conducted with Coypu, a Pharo-based library and dialect for live music programming.
+Phizura leverages Method Proxies, a safe and fast message-passing control library, to non-intrusively intercept code evaluations and keystrokes during a performance.
+The recorded data, timestamped expressions and input events, can later be emitted as executable Pharo code that faithfully replays the performance with the original timing.\sebas{"faithfully" is not the right word for me. we can say that it captures exactly the same evaluated code and later we can export it as pharo pretty code or OSC signals.}
+We describe the architecture of Phizura, detail how Method Proxies enable a clean separation between recording logic and the Coypu codebase, and compare the approach to a previous Announcer-based implementation.
+\sebas{A word about what problem phizura help us fix)}
 \end{abstract}
 
 %%
@@ -95,8 +101,11 @@ Live coding is a performance practice in which artists write and modify code in 
 %% the work being presented. Separate the keywords with commas.
 \begin{keywords}
   Pharo\sep
+  Method interception\sep
+  Code evaluation\sep 
   Method Proxies \sep
   Coypu \sep
+  Live-coding\sep
   On-the-fly music programming
 \end{keywords}
 
@@ -114,14 +123,17 @@ Programming languages such as Tidal Cycles\cite{McLe14}, Sonic Pi\cite{Aar16}, a
 
 To date, relatively little scholarly attention has been devoted to capturing and preserving live coding performances, particularly the generative process itself. Audio recording captures the sonic result but discards the compositional process: the sequence of code edits, evaluations, and their precise timing. Audio files are also large, difficult to share, and impossible to re-execute under a different setup. Compositional data, by contrast, enables exact replay of a performance with alternative sound synthesis, facilitates sharing between musicians as lightweight text files, supports analysis of live coding practice, and opens the door to automated post-processing of performances. This concern has been raised explicitly in the Tidal Cycles community\footnote{Tidal Club Forum, How to replay a live coding session. Link at \url{https://club.tidalcycles.org/t/how-to-replay-a-live-coding-session/464}, 2020.}, where users have discussed the need for tools that store every evaluation with its timestamp and allow session-based replay. However, no integrated solution has emerged so far.
 
+\sebas{We can say that we can use phizura to replay livecoding performances and do cool stuff}.
+
 This paper presents the design and implementation of Phizura, shows how Method Proxies\cite{Jord24b} can be applied beyond profiling and debugging to support creative coding workflows, and compares the current approach to the previous Announcer-based implementation. The paper begins with background on Coypu and Method Proxies, then discusses the limitations of the earlier Announcer-based approach that motivated the redesign. It continues with the architecture and implementation of Phizura, the code emission and replay mechanism, and a discussion of related work. It closes with a reflection on generality, limitations, and future directions.
 
+\sebas{A word about future work}.
 
 \section{Background}\label{sec:bac}
 
 \subsection{Live coding}
 
-Pienso que es importante que empecemos hablando de live coding. Que el enfoque del paper sea más del lado de live coding y que el público sea informáticos que no conoces mucho sobre live coding.
+\sebas{Pienso que es importante que empecemos hablando de live coding. Que el enfoque del paper sea más del lado de live coding y que el público sea informáticos que no conoces mucho sobre live coding.}
 
 \subsection{Coypu: programming music on-the-fly with Pharo}
 
@@ -187,9 +199,27 @@ In the next section, we will present how we used MethodProxies to implement Phiz
 
 \section{Phizura: On-the-Fly Music Recording}
 
-Phizura is a music recording for Copyu that captures every code evaluation and produces executable code that replay the music with the same delays.
-Its redesign starts from a single observation: every expression a performer evaluates already passes through a small number of well-defined methods inside the Playground.
-Method Proxies can intercept those methods from the outside, which means the recorder never needs to live inside Coypu.
+Phizura\footnote{Phziura is available at GitHub at \url{https://github.com/jordanmontt/Phizura}}, pronounced \texttt{/fi'su\*ra/} following Latin American Spanish phonetics, is a Coypu\footnote{Copyu can be found at \url{github.com/lucretiomsp/Coypu}}\ replayer.
+Coypu is a library for live-generating electronic music.
+It is typically used by musicians and artists to perform live shows in which they generate and play music in real time.
+These performances are characterized by improvisation, which is the central artistic concept behind them.
+One of Coypu's core ideas is iconicity: the structure of the code should reflect the structure of the resulting music.
+This concept is based on the linguistic notion of form meaning similarity~\cite{Haim85a, Comr81a}.
+
+In some cases, artists and researchers aim to capture live coding performances~\cite{Nils07a} for later replay.
+Live coding involves not only writing code but performing it in real time, often in a musical concert setting.
+Phizura is designed to record all code executions exactly as written, along with all keystrokes.
+Timestamps are also captured to preserve the temporal sequence of the performance.
+
+Thanks to Method Proxies, the implementation of Phizura was straightforward. 
+We instrumented the methods responsible for code evaluation (compilation plus execution). 
+Pharo already provides support for capturing keystrokes, so we integrated a call to Phizura within the existing callback. 
+
+The programmer can configure when to start and stop instrumentation. 
+Because Method Proxies allows dynamic (de)instrumentation without restarting, the programmer record or stop recording at any time.
+Afterward, double dispatch is used to generate code that reproduces the session, preserving the original temporal flow by incorporating the recorded timestamps as delays.
+The generated code can also include custom actions, such as sending external signals to other devices for each code evaluation or keystroke.
+
 The implementation is split across three packages.
 
 \begin{itemize}
@@ -335,23 +365,21 @@ Beyond live performance, Phizura can serve as a general-purpose prototyping reco
 A third application is pedagogical. An instructor demonstrating a concept in a Pharo Playground could record the session and distribute it as a small text file. Students would then replay the demonstration at their own pace, seeing each evaluation appear with the original timing. Unlike a video recording, the replayed script is live code: students can pause it, modify the expressions, and explore variations. Unlike a video recording, the replayed script is live code: students can pause it, modify the expressions, and explore variations. Unlike a static code listing, it preserves the temporal dimension, the order and rhythm of the instructor's thought process.%%
 
 \subsection{Limitations}
-The current implementation captures Playground evaluations but does not record workspace edits that are not evaluated. A performer may type, delete, and rearrange code extensively before pressing \textit{Cmd+D}; only the final evaluated expression is recorded. The keystroke capture partially addresses this gap by logging individual key events with timestamps and cursor positions, but it does not reconstruct the full editing history in a way that could be replayed as a visual typing sequence. That would require a different approach, closer to what Live Writing\cite{Essl14} provides.\sebas{I dont inderstand why the keystores and timestramps are not enough,}
+The current implementation captures Playground evaluations but does not record workspace edits that are not evaluated.
+A performer may type, delete, and rearrange code extensively before pressing \textit{Cmd+D}; only the final evaluated expression is recorded.
+The keystroke capture partially addresses this gap by logging individual key events with timestamps and cursor positions, but it does not reconstruct the full editing history in a way that could be replayed as a visual typing sequence. That would require a different approach, closer to what Live Writing\cite{Essl14} provides.\sebas{I dont inderstand why the keystores and timestramps are not enough,}
 
-Timing fidelity depends on the granularity of \texttt{DateAndTime now} and the accuracy of \texttt{seconds wait} during replay. For musical purposes, where consecutive evaluations are typically separated by one to several seconds, this is more than sufficient: the human performer's own timing variability is far larger than any clock imprecision.
+Timing fidelity depends on the granularity of \texttt{DateAndTime now} and the accuracy of \texttt{seconds wait} during replay.\sebas{Actually we capture the time in milliseconds using a native method.} For musical purposes, where consecutive evaluations are typically separated by one to several seconds, this is more than sufficient: the human performer's own timing variability is far larger than any clock imprecision.
 
-Finally, the current design supports a single recording session at a time, managed through a global variable. Collaborative live coding scenarios, where multiple performers evaluate code in separate Playgrounds, would require extending the architecture to support multiple concurrent recorders.
-
+Finally, the current design supports a single recording session at a time, managed through a global variable. Collaborative live coding scenarios, where multiple performers evaluate code in separate Playgrounds, would require extending the architecture to support multiple concurrent recorders.\sebas{We could have one phizura instance per playground and no longer have the singleton.}
 
 \section{Conclusion}
 
 This paper presented Phizura, a non-intrusive recorder for live coding performances in Pharo. Using Method Proxies, the instrumentation of the Playground's evaluation methods happens without modifying the Coypu codebase. The recorded timestamped expressions can be emitted as executable Pharo code that replays the performance with faithful timing. Compared to the previous Announcer-based implementation, the Method Proxies approach is modular, decoupled, and extensible.
 
-Phizura demonstrates that Method Proxies, originally designed for profiling and debugging, are equally effective for creative applications. To the best of our knowledge, Phizura is the first tool to use reflective instrumentation for recording live coding performances, and the first to produce self-contained, evaluation-level replay scripts.
+Phizura demonstrates that Method Proxies, originally designed for profiling and debugging, are equally effective for creative applications. To the best of our knowledge, Phizura is the first tool to use reflective instrumentation for recording live coding performances, and the first to produce self-contained, evaluation-level replay scripts.\sebas{". To the best of our knowledge, Phizura is the first tool to use reflective instrumentation" this is very important. We should put this sentence in both the introduction and the abstract.}
 
 Future work will focus on two directions. First, we plan to expose a simpler public API within the Phizura package, allowing users to define custom handlers triggered by specific methods in their own libraries, giving live coders finer control over what is captured and how it is processed. Second, we aim to support recording across multiple Playgrounds simultaneously, enabling collaborative live coding sessions to be captured as a single, synchronized script.
-
-
-%% Define the bibliography file to be used
 
 
 \bibliography{rmod,others}
