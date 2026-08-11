@@ -282,7 +282,9 @@ A small custom subclass solves this problem.
 
 The custom Playground is otherwise a thin layer over the standard one, with four subclasses.
 \ct{PhizuraPlaygroundPresenter} substitutes the page class and stops the recorder when the window is closed.
-\ct{PhizuraPlaygroundPagePresenter} is the central piece: it defines the method that the Method Proxies intercept, initializes the recorder, registers the keystroke listener, plugs in a custom interaction model so that the page can act as its own evaluation context, and extends the toolbar with five commands (Figure~\ref{fig:phizuraPG-toolbar}): \textit{Phizurear} toggles recording, \textit{Clean Phizura} resets the recorder, \textit{Inspect Phizura} opens an inspector on the current session, and \textit{Open MoofLOD} and \textit{Open Records} emit the two flavors of replay script discussed in the next section.
+\ct{PhizuraPlaygroundPagePresenter} is the central piece: it defines the method that the Method Proxies intercept, initializes the recorder, registers the keystroke listener, plugs in a custom interaction model so that the page can act as its own evaluation context, and extends the toolbar with five commands (Figure~\ref{fig:phizuraPG-toolbar}): \textit{Phizurear} toggles recording, \textit{Clean Phizura} resets the recorder, \textit{Inspect Phizura} opens an inspector on the current session, and \textit{Open MoofLOD} and \textit{Open Records} emit the two flavours of replay script discussed in the next section.
+MoofLOD (Music on-the-Fly with Levels of Detail) is an ongoing research project undertaken jointly by two Lille-based teams, Evref (Inria) and MINT (CRIStAL). It augments live coding musical performances by exposing to the audience additional information about the musical structure, namely notes, rhythms, and instrument assignments, together with a real-time reproduction of the computer keyboard intended to make the performer's technical virtuosity visible.\footnote{The central research question concerns whether, and to what extent, this additional information layer enhances audience engagement and comprehension.}
+
 
 \begin{figure}[ht!]
 \begin{center}
@@ -322,7 +324,7 @@ ep playFor: 128 bars.
 \end{lstlisting}
 
 The second mode, \ct{emitMoofLODCode}, extends the performance code with OSC-compatible messages
-Each evaluated expression, keystroke, and cursor position is also signaled.
+Each evaluated expression, keystroke, and cursor position is also signalled.
 The resulting script still reproduces the music, but it now also exposes everything that happened during the session to any OSC-capable consumer, opening the door to live visualizations, second-screen overlays, or synchronization with other tools.
 
 \begin{lstlisting}[label={lst:emitted-mooflod},caption={Example of emitted MoofLOD code (middle elided)}]
