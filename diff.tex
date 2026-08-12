@@ -1,7 +1,7 @@
 %% The first command in your LaTeX source must be the \documentclass command.
 %DIF LATEXDIFF DIFFERENCE FILE
 %DIF DEL old.tex               Wed Aug 12 09:54:07 2026
-%DIF ADD iwst2026Phizura.tex   Wed Aug 12 10:45:57 2026
+%DIF ADD iwst2026Phizura.tex   Wed Aug 12 10:58:24 2026
 %%
 %% Options:
 %% twocolumn : Two column layout.
@@ -406,7 +406,7 @@ It is initialized when the Phizura Playground opens, either from the Pharo world
 A session ends with a chronologically ordered list of timestamped entries in the recorder.
 Replay turns that list back into something the image can run.
 The job is done by \ct{PhizuraCodeEmitter}, which walks the entries in order, subtracts each pair of consecutive timestamps to recover the original delays, and emits Pharo source separated by \ct{seconds wait} statements.
-The whole script is wrapped in a forked block so that the waits do not freeze the UI process, and so that the performer can launch the replay from the same Playground that captured the session.
+The whole script is wrapped in \DIFdelbegin \DIFdel{a forked block }\DIFdelend \DIFaddbegin \DIFadd{another thread }\DIFaddend so that the waits do not freeze the UI process, and so that the performer can launch the replay from the same Playground that captured the session.
 
 The emitter supports two modes, and the choice between them is made through a double dispatch with the record entries: the emitter asks each entry to render itself, and the entry calls back into the emitter with its own type information.
 New emission formats can therefore be added without touching the entry classes, and new entry types without touching the existing emitter methods.
@@ -468,7 +468,7 @@ Another related effort is SHARP~\cite{Bowm23a}, a Pulsar\footnote{Pulsar (\url{h
 
 \section{Generality beyond music}
 This instrumentation targets all expressions evaluated in the Playground, not any Coypu-specific code. As a result, any expression evaluated in a Phizura Playground is captured\footnote{Whether the code produces sound, generates visuals, manipulates data, or does anything else entirely.}, making the approach entirely generic.
-This opens several concrete uses beyond music. In the domain of visual live coding, performances using Bloc or Roassal for real-time graphics could be recorded and replayed with the same tool, without any modification to Phizura.
+This opens several concrete uses beyond music. In the domain of visual live coding, performances using Bloc\DIFdelbegin \DIFdel{or Roassal }\DIFdelend \DIFaddbegin \footnote{\DIFadd{Bloc }\url{https://github.com/pharo-graphics/Bloc} \DIFadd{is a low-level UI infrastructure and framework for Pharo.}} \DIFadd{or Roassal}\footnote{\DIFadd{Roassal }\url{https://github.com/pharo-graphics/Roassal} \DIFadd{is a visualization Engine for Pharo.}} \DIFaddend for real-time graphics could be recorded and replayed with the same tool, without any modification to Phizura.
 Beyond live performance, Phizura can serve as a general-purpose prototyping recorder. Developers routinely explore APIs, test hypotheses, and prototype solutions through sequences of small evaluations. Phizura can capture these sessions as timestamped scripts, providing a lightweight form of session recording that preserves not just what was tried, but in what order and at what pace. Think \DIFaddbegin \DIFadd{of }\DIFaddend documenting design decisions, reviewing your own process, or sharing a discovery workflow with other users.
 
 A third application is pedagogical. An instructor demonstrating a concept in a Pharo Playground could record the session and distribute it as a small text file. Students would then replay the demonstration at their own pace, seeing each evaluation appear with the original timing. Unlike a video recording, the replayed script is live code: students can pause it, modify the expressions, and explore variations. Unlike a \DIFdelbegin \DIFdel{video recording, the replayed script is live code: students can pause it, modify the expressions, and explore variations. Unlike a }\DIFdelend static code listing, it preserves the temporal dimension, the order and rhythm of the instructor's thought process.%%
