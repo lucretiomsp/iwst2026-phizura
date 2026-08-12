@@ -85,15 +85,12 @@ email=stephane.ducasse@inria.fr,
 %% The abstract is a short summary of the work to be presented in the
 %% article.
 \begin{abstract}
-Live coding is a performance practice in which artists write and modify code in real time to generate music, visuals or poetry.
-Live coding turns coding into an artistic performance: an improvised practice in which the artist builds and reworks material on the fly, embracing the immediacy of creation in real time.
-An open challenge for live coding is to capture the actual writing and evaluation of expressions, rather than only the resulting audio, in a form that yields a replayable script while remaining modifiable and playable with other sounds.
-This paper presents Phizura, a recording tool for on the fly music performances conducted with Coypu--a Pharo based library and dialect for live music programming.
-Phizura uses MethodProxies, a safe and fast per-method instrumentation library.
-Phizura provides clean, non-invasive instrumentation that captures both keystrokes and evaluations without polluting the original codebase.
-Phizura generates code with the timestamped expressions and input events that replays the performance with the original timing.
-Being Pharo a fully live environment, the instrumentation can be installed and removed on a running image during the performance itself, and the replay is not a video or a log but editable and readable code.
-To the best of our knowledge, this is the first tool to record live coding performances via reflective instrumentation, replayable as self-contained scripts at evaluation granularity.
+Live coding is a performance practice in which artists write and modify code in real time to generate music, visuals or poetry. Live coding turns coding into an artistic performance: an improvised practice in which the artist builds and reworks material on the fly, embracing the immediacy of creation in real time
+An open challenge for live coding is to capture the actual writing and evaluation of expressions rather than only the resulting audio, yielding a script that can be replayed yet remains modifiable and playable with other sounds
+This paper presents Phizura, a recording tool for on-the-fly music performances conducted with Coypu, a Pharo-based library and dialect for live music programming. To our knowledge, this is the first tool to record live coding performances via reflective instrumentation, replayable as self-contained scripts at evaluation granularity.
+Phizura leverages Method Proxies, a safe and fast message-passing control library, to non-intrusively intercept code evaluations and keystrokes during a performance.
+The recorded data, timestamped expressions and input events, can later be emitted as executable Pharo code that faithfully replays the performance with the original timing.
+We describe the architecture of Phizura, detail how Method Proxies enable a clean separation between recording logic and the Coypu codebase, and compare the approach to a previous Announcer-based implementation. Phizura provides clean, non-invasive instrumentation that captures both keystrokes and evaluations without polluting the original Coypu codebase.
 \end{abstract}
 
 %%
@@ -122,16 +119,6 @@ The field has developed a substantial academic presence: the International Confe
 Programming languages such as Tidal Cycles~\cite{McLe14a}, Sonic Pi~\cite{Aaro16a}, and Orca~\cite{Mess21a} have popularized the practice, each offering alternative syntaxes and notations for expressing musical patterns. Within the Pharo ecosystem, Coypu\cite{Cipr25c} provides a library and a DSL for on-the-fly music programming, enabling performers to construct rhythmic sequences, melodic patterns, and to modify them interactively in a Playground.
 
 To date, relatively little scholarly attention has been devoted to capturing and preserving live coding performances, particularly the generative process itself. Audio recording captures the sonic result but discards the compositional process: the sequence of code edits, evaluations, and their precise timing. Audio files are also large, difficult to share, and impossible to re-execute under a different setup. Compositional data, by contrast, enables exact replay of a performance with alternative sound synthesis, facilitates sharing between musicians as lightweight text files, supports analysis of live coding practice, and opens the door to automated post-processing of performances. This concern has been raised explicitly in the Tidal Cycles community\footnote{Tidal Club Forum, How to replay a live coding session. Link at \url{https://club.tidalcycles.org/t/how-to-replay-a-live-coding-session/464}, 2020.}, where users have discussed the need for tools that store every evaluation with its timestamp and allow session-based replay. However, no integrated solution has emerged so far. With Phizura, recorded performances become living scripts that can be replayed, remixed, and rew-composed with new sounds.
-
-Phizura exists because in Pharo the language and the IDE were co-designed as one live system, and the IDE itself is the running program.
-Code is kept  as objects in memory rather than as text in files.
-The debugger opens inside the running execution context, and a method rewritten there resumes without a restart~\cite{Grig26a}.
-The instrumentation is not an exception: Phizura's instrumentation belongs to the same world: MethodProxies are installed and removed during a performance, on a running image, with no restart and no interruption of the audio.
-The same liveness shapes the output.
-What Phizura produces is not a video, an audio file, or a log to be inspected offline, but Pharo source that the image evaluates.
-A replayed performance can be paused, edited, re-timed, routed to a different synthesiser, or spliced into a new session.
-Recording therefore stops being documentation and becomes part of the instrument: the performer plays, captures, and plays the capture back as new material.
-Live music in a live environment.
 
 This paper presents the design and implementation of Phizura, shows how Method Proxies\cite{Jord24b} can be applied beyond profiling and debugging to support creative coding workflows, and compares the current approach to the previous Announcer-based implementation. The paper begins with background on Coypu and Method Proxies, then discusses the limitations of the earlier Announcer-based approach that motivated the redesign. It continues with the architecture and implementation of Phizura, the code emission and replay mechanism, and a discussion of related work. It closes with a reflection on generality, limitations, and future directions.
 
@@ -297,9 +284,6 @@ The custom Playground is otherwise a thin layer over the standard one, with four
 \ct{PhizuraPlaygroundPresenter} substitutes the page class and stops the recorder when the window is closed.
 \ct{PhizuraPlaygroundPagePresenter} is the central piece: it defines the method that the Method Proxies intercept, initializes the recorder, registers the keystroke listener, plugs in a custom interaction model so that the page can act as its own evaluation context, and extends the toolbar with five commands (Figure~\ref{fig:phizuraPG-toolbar}): \textit{Phizurear} toggles recording, \textit{Clean Phizura} resets the recorder, \textit{Inspect Phizura} opens an inspector on the current session, and \textit{Open MoofLOD} and \textit{Open Records} emit the two flavors of replay script discussed in the next section.
 
-MoofLOD (Music on-the-Fly with Levels of Detail) is an ongoing research project undertaken jointly by two Lille-based teams, Evref (Inria) and MINT (CRIStAL). It augments live coding musical performances by exposing to the audience additional information about the musical structure, namely notes, rhythms, and instrument assignments, together with a real-time reproduction of the computer keyboard intended to make the performer's technical virtuosity visible.\footnote{The central research question concerns whether, and to what extent, this additional information layer enhances audience engagement and comprehension.}
-
-
 \begin{figure}[ht!]
 \begin{center}
    \includegraphics[width=0.75\linewidth]{assets/phizuraBar-screenshot.png}
@@ -387,8 +371,6 @@ A third application is pedagogical. An instructor demonstrating a concept in a P
 \section{Conclusion and future work}
 
 This paper presented Phizura, a non-intrusive recorder for live coding performances in Pharo. Using Method Proxies, the instrumentation of the Playground's evaluation methods happens without modifying the Coypu codebase. The recorded timestamped expressions can be emitted as executable Pharo code that replays the performance with faithful timing. Compared to the previous Announcer-based implementation, the Method Proxies approach is modular, decoupled, and extensible.
-
-More generally, Phizura shows the value of a live environment such as Pharo. A non-live environment can log a session, but it cannot install the logger mid performance, and it cannot hand back a recording that is itself executable, editable code. These are not incidental features; they follow directly from the Pharo object model. The ability to modify the system while it runs, and to treat any captured material as live code, changes the status of recording from passive documentation to active material. Recording need not be a departure from the live practice. It is an extension of it.
 
 Phizura demonstrates that Method Proxies, originally designed for profiling and debugging, are equally effective for creative applications. To the best of our knowledge, Phizura is the first tool to use reflective instrumentation for recording live coding performances, and the first to produce self-contained, evaluation-level replay scripts.
 The current implementation captures Playground evaluations but does not record workspace edits that are not evaluated.

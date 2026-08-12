@@ -1,153 +1,73 @@
-Dear Sebastian Jordan Montaño,
+ear Sebastian Jordan Montaño,
 
 We are grateful for your patience while waiting for the first paper notification.
 
-We are pleased to inform you that your paper has been accepted for publication in the IWST 2025 proceedings.
+We are pleased to inform you that your paper has been accepted for publication in the IWST 2026 proceedings.
 
-Submission ID:3
-Title: Coypu: a library and DSL for Composing and Performing Electronic Music on-the-Fly with Pharo
-Authors: Domenico Cipriani, Sebastian Jordan Montaño, Nahuel Palumbo, Stéphane Ducasse
+Submission ID:18
+Title: Phizura: On-the-Fly Music Recording with Method Proxies
+Authors: Domenico Cipriani, Sebastian Jordan Montaño, Stéphane Ducasse
 
-Please, find enclosed the reviewers' comments and improve your paper according to the reviewers' suggestions and resubmit the paper to the EasyChair submission page by July 28th, 2025 AoE.
-
-Furthermore, please include your answers to the reviewers and discuss the requested changes that you have incorporated and the reasons in case you haven't done so. You may also upload a diff of the paper in case you consider it appropriate. Reviewers will verify your answers and validate that everything is ok for the proceedings.
+Please find enclosed the reviewers' comments, and improve your paper according to the reviewers' suggestions and resubmit the paper to the EasyChair submission page by August 15th, 2026 AoE.
+Furthermore, please include your answers to the reviewers and discuss the requested changes that you have incorporated and reasons in case you haven't done so.
+You may also upload a diff of the paper in case you consider it appropriate. Reviewers will verify your answers and validate that everything is ok for the proceedings.
 
 Furthermore, please keep in mind originality, style, structure, and formal English language, which is compulsory for academic publications.
 
 Best regards,
 IWST team
 
-SUBMISSION: 3
-TITLE: Coypu: a library and DSL for Composing and Performing Electronic Music on-the-Fly with Pharo
+SUBMISSION: 18
+TITLE: Phizura: On-the-Fly Music Recording with Method Proxies
 
 ----------------------- REVIEW 1 ---------------------
 
-SUBMISSION: 3
-TITLE: Coypu: a library and DSL for Composing and Performing Electronic Music on-the-Fly with Pharo
-AUTHORS: Domenico Cipriani, Sebastian Jordan Montaño, Nahuel Palumbo and Stéphane Ducasse
+SUBMISSION: 18
+TITLE: Phizura: On-the-Fly Music Recording with Method Proxies
 
 ----------- Overall evaluation -----------
 SCORE: 3 (strong accept)
 ----- TEXT:
-The extended abstract describes coypu, a DSL to program music on Pharo.
-The paper presents the design decisions and principles followed behind.
-
-The abstract is on topic with the workshop, and is relevant for the whole community, involving language and library implementors, and music practitioners.
+I really enjoyed this paper. A real tool, a real need, and a playful idea.
+My main observation is that the paper undersells its strongest claim. In one line: live music in live Pharo. Phizura can exist because Pharo is a fully live environment — instrumentation can be added and removed at runtime during a performance, and the replay is not a video or log but live, editable code. The recording itself becomes an instrument. This point is implicit throughout but never stated explicitly. I encourage you to make it so. Your own group’s recent “It’s Alive!” paper (arXiv:2603.02987) provides the perfect reference for the live-object foundation.
+The abstract is long because the paper touches several interesting things at once: a recorder for live music performances, a creative use of Method Proxies, and a general mechanism for capturing interactive sessions. I suggest choosing one of these as the main driver and letting the others appear as valuable side effects. The reader should know from the first paragraph which journey they are on.
+A concrete suggestion: include a short audible appendix. A 5-minute video showing a live session followed by replay of the emitted script (with timestamps) would make the contribution much more tangible. Publishing the emitted script alongside the video would also align with the paper’s own argument that performances can be shared as lightweight text files.
+Smaller points: The MoofLOD mode needs one sentence explaining its intended consumers. The planned API for user-defined handlers is exciting — one concrete example would help the community see its potential. Finally, the text would benefit from a careful proofreading pass (duplicated sentence in Section 6, repeated future-work paragraph, missing periods, and footnote typos for Coypu and Phizura).
+The MoofLOD mode would benefit from one sentence explaining what MoofLOD is.
+The limitations paragraph is refreshingly honest. This is exactly the kind of working-system paper I like to see at IWST. I would be happy to review a revised version.
 
 
 ----------------------- REVIEW 2 ---------------------
 
-SUBMISSION: 3
-TITLE: Coypu: a library and DSL for Composing and Performing Electronic Music on-the-Fly with Pharo
-AUTHORS: Domenico Cipriani, Sebastian Jordan Montaño, Nahuel Palumbo and Stéphane Ducasse
+SUBMISSION: 18
+TITLE: Phizura: On-the-Fly Music Recording with Method Proxies
 
 ----------- Overall evaluation -----------
-SCORE: 1 (weak accept)
+SCORE: 2 (accept)
 ----- TEXT:
-This paper presents Coypu, a new library for on-the-fly music programming within Pharo.
-It first presents the main classes of Coypu with examples of them, then shows some examples of the DSL.
+The submission introduces Phizura as a live coding platform for music performance, producing and recording. One of its contributions is integration with the Method Proxies library that improves the design, adds significant features and increases reusability.
 
-Comments:
+The paper is well written and easy to follow. However, to convince the reader about the improvements by the new approach, I would suggest adding some illustrations of "before and after". Similarly, it would be very nice to see some examples in the section "Generality beyond music".
 
-- Abstract and Intro: I would remove the dashes in sentences because they look like ChatGPT style in text reformulation for example:
-"... stochastic generation—where random processes are employed to create musical elements—while... "
-"... music—one that is easy ... "
-"... material—especially music and visuals."
-- Intro, third paragraph: reference is incorrect near "Kyma system[?]"
-- Intro last 2 paragraphs: This is more state of the art than previous work.
-- Intro last sentence: It is not clear what the sections of the paper are.
-
-- Section 2.1 second sentence: digital audio workstation should be capitalized.
-- Section 2.1 last paragraph: no need to explain again the abbreviation Digital Audio Workstation (DAW); just say DAW since it was stated previously.
-- Section 2,1 figure description: what is OSC ?
-- General comment about listings: I would prefer to cite the listings in the paper to link them with the paragraphs instead of putting them at the end of each section with a long description for each one.
-- Conclusion: Usually a conclusion is a briefing of the paper. A repetition of the intro reformulated in another way. This is helpful for readers who will first have a look at the abstract, intro, and conclusion to have an idea about the paper's subject. But it is not the case here. Suggestion: rename "conclusion" as "use case" or something similar, and reformulate a new conclusion.
-
-- The authors said at the begining that the paper presents a DSL/library. Then in the following we saw that the authors used Dialect. It is not clear. Also to introduce a new Language it is recommended to explain how its grammar looks like in a generic way; it could be done using for example using BNF notation. But I'm not sure if this is what is meant by.
-
-Some typo issues:
-- Intro, second paragraph, second sentence: We offer an an overview ...
-- Section 2 first sentence: ... Preformance performance class.
-- Section 2.1 last sentence: parametrs
-- ....
-- Conclusion: hosted at System in Shanghai, hosted at System in Shanghai
+As a minor remark, please be sure to add all important references. For example, Block and Roassal are mentioned without a real explanation and, more importantly, a reference.
 
 
 ----------------------- REVIEW 3 ---------------------
 
-SUBMISSION: 3
-TITLE: Coypu: a library and DSL for Composing and Performing Electronic Music on-the-Fly with Pharo
-AUTHORS: Domenico Cipriani, Sebastian Jordan Montaño, Nahuel Palumbo and Stéphane Ducasse
+SUBMISSION: 18
+TITLE: Phizura: On-the-Fly Music Recording with Method Proxies
 
 ----------- Overall evaluation -----------
-SCORE: 1 (weak accept)
+SCORE: 3 (strong accept)
 ----- TEXT:
-Composing and Performing Electronic Music no-the-Fly with Pharo and Coypu
+The technology described in this article constitutes a real contribution. By refactoring previous work in depth, the authors achieve increased flexibility, better performance, and also a wider range of use cases, which brings clear added value. The scope of the work is therefore significantly improved, with the possibility for new users, coming with their own libraries, to exploit and benefit from the proposed environment.
 
-In this paper, the authors present their implementation of an interface to generate music with Pharo. This interface then connects to known musical producer programs through HTTP to generate sound performances.
+The notion of live coding is first introduced as a real-time activity, mainly in a musical context. The idea of lightweight recording of coding activities in transcripts, with timestamps and replay capabilities, appears to provide a sort of sandbox for many experiments. Especially as the Method Proxies approach largely eliminates coupling between the recording
+infrastructure and the domain library.
 
+Since the authors claim that scenarios can be replayed, it should also be possible to refactor them. It would be interesting to relate this to a form of debugging applied to musical expression, in the sense of a performer repeating a piece until reaching a satisfying level of mastery.
+This suggests that live coding is not only about real-time performance, but also about revisiting and incrementally improving what has been produced.
 
-= Major comments =
-== Pros ==
-+ Interesting topic for the Smalltalk community. There are not many papers linking music and the Smalltalk world
-+ Proper English is used
-+ Justification for the design choices of the implementation of the interface is appreciated
-+ The paper sets up the basis for a non-musician to understand the implementation needs
+Another aspect that could be explored is the level of expressivity. For instance, trying to reproduce well-known electronic music tracks, even in simplified versions (e.g., Waiting for the Stars by Vitalic), would help better assess the capabilities of the system. It could also be a motivating exercise for students.
 
-
-== Cons ==
-+ In a paper discussing the implementation of a library, there is confusion between the concepts of classes and instances.
-+ Classes could have been named with Abstract<classname> since they are not instantiated nor subclassed, e.g, the "Performer" class.
-+ Specific musical domain terms and acronyms are defined throughout the paper, but are used in the introduction. Some concepts are used without definition. This gives a fuzzy feeling to the reader. An additional Section presenting the main concepts could be an added value.
-+ Many mistakes could have been avoided by just reading the paper one last time attentively (word and sentence repetition, references not found).
-
-= Minor comments =
-+ General: Section should be capitalized (S2§1)
-+ General: The authors need to decide on how to present method names in the paper: either as playFor: in S2§2 or as playEventAt: anIndex in S3§1.
-+ General: bullet point lists could be aligned more on the left
-+ S1§2: We offer an an overview -> offer an overview
-+ S1§3: Kyma[?] : missing reference
-+ S1§3: "Kyma is recongnized for its state-of-the-art synthesis engine" -> It is quite a strong statement. Where is the reference?
-+ S1§6: The Section presentation is unclear.  It seems there are 5 or 2 parts, but not 4. Something like "Section 2 presents... . Then Section 3 describes..." could be better
-+ S2§1 : If the class is called Performance, it seems obvious that it is for a performance, no need to repeat the word.
-+ S2§1 : "It is implemented as a singleton ... new instances.". The author shouldn't get directly into the details of the implementation. First, the reader needs to understand what a Performance is, to appreciate that a singleton is needed.
-+ Listings: The listings should be referenced and described as Figure 1. Line numbers can be added to ease further references and explanations.
-+ S2-Listing 1: There is no previous explanation on Performer and OS. This is losing the reader. Moreover, "#rumba asRhyth to: #conga" seems not linked to the Performance singleton nor the Performer. Maybe a paragraph detailing this could be welcomed.
-+ S2§2: "The sequencers within the performance can be muted". What is a sequencer? It is defined later, but this is too early here
-+ S2§2: "When a Performance is played after a number of steps". What is a step?
-+ S2§2: "The value assigned .. variable". The reader is unsure of understanding the meaning here. Again, describing Listing 1 precisely could help improve the discourse.
-+ S2.1: Why a subsection there? Why is there no Section 2.2?
-+ S2.1§1: "The sequencer class stores the data" -> Does the author mean "A sequencer instance stores..."?
-+ S2.1§2: What are gates, noteIndex?
-+ Figure 1: Why does the dirt message not have a value?
-+ S2.1§3: "A sequencer .. DAW)" is repeated
-+ S2.1§3: Great description of the mechanism, but a link to the instance variable above can add some value.
-+ Listing 2: Why does the performer change the performance? It appears that the class responsibility of the performer is not well-defined. Do you miss a performance initializer?
-S3.1§1: The fact that a naming convention for the classes exists implies there is some dynamic name linking. Maybe some explanation could be interesting.
-S3.1§3-4: The reader doesn't need details on the port and protocol that are used. Saying that using a network connection is enough.
-Listing 3: "Performer" shouldn't be named "SuperDirtPerformer"? The code is very specific to it.
-Listing 3: Why is the temporary variable "message" a collection? Having a first-class object and building it little by little seems more interesting.
-+ S3.3§1: "Phausto is library and API". A Library is usually embedded in a program, whereas an API is typically an external, standalone application over the network. The reader doesn't see how it can be both.
-+ S3.3§1: "The events in the sequencer are dispatched to the assigned by [...] FFI calls." What is "the assigned"?
-+ S4§1: Footnote 5 can be inlined.
-+ S4§2: "If notes ... the" -> sentence duplicated
-+ S4.3: The Euclidean rhythms and Hexbeats could need an example.
-+ S4.3: Hexbeats may deserve their own Section
-+ S4.4§2: "Entries are separated by commas". Why is the author not using dynamic arrays to define the notes? Could it ease finding the patterns?
-+ S5§1: "The lack of flexibility in ...". The linear notation and cyclical structures seems essential concepts that are not defined previously.
-+ Figure 2: not referenced nor explained
-+ S6§1: "hosted at System..." -> repeated
-+ S6§1: What is TurboPhausto? Perhaps it could be defined in Section 5, along with future work?
-+ S6§1: Why is Iceberg referenced there? Do we need a versioning system to create music?
-+ S6§1: Toplo and Bloc could use references.
-
-
-= Typos =
-S2§2: playhead incrementing -> playhead by incrementing
-S2§2: {seqKey -> #seqKey?
-S2.1§3: parametrs -> parameters
-S3.1§2: accordig -> according
-Listing 4: anew -> a new
-S4§4: subsection -> subsections
-S4.2§1: trigs -> triggers
-S4.2§1: spired: remove
+I believe one other interesting future orientation could be to consider the infrastructure as a kind of digital twin for robotics (sending timestamped commands), with concurrent live coding opening space for team-based contest organization (e.g., moving a robot along a predefined path, performing actions while playing music and strobing light effects).
