@@ -1,7 +1,7 @@
 %% The first command in your LaTeX source must be the \documentclass command.
 %DIF LATEXDIFF DIFFERENCE FILE
 %DIF DEL old.tex               Wed Aug 12 09:54:07 2026
-%DIF ADD iwst2026Phizura.tex   Wed Aug 12 10:40:17 2026
+%DIF ADD iwst2026Phizura.tex   Wed Aug 12 10:45:57 2026
 %%
 %% Options:
 %% twocolumn : Two column layout.
@@ -172,13 +172,13 @@ email=stephane.ducasse@inria.fr,
 Live coding is a performance practice in which artists write and modify code in real time to generate music, visuals or poetry.
 Live coding turns coding into an artistic performance: an improvised practice in which the artist builds and reworks material on the fly, embracing the immediacy of creation in real time\DIFaddbegin \DIFadd{.
 }\DIFaddend An open challenge for live coding is to capture the actual writing and evaluation of expressions\DIFaddbegin \DIFadd{, }\DIFaddend rather than only the resulting audio, \DIFdelbegin \DIFdel{yielding a script that can be replayed yet remains }\DIFdelend \DIFaddbegin \DIFadd{in a form that yields a replayable script while remaining }\DIFaddend modifiable and playable with other sounds\DIFaddbegin \DIFadd{.
-}\DIFaddend This paper presents Phizura, a recording tool for \DIFdelbegin \DIFdel{on-the-fly }\DIFdelend \DIFaddbegin \DIFadd{on the fly }\DIFaddend music performances conducted with \DIFdelbegin \DIFdel{Coypu, a Pharo-based }\DIFdelend \DIFaddbegin \DIFadd{Coypu--a Pharo based }\DIFaddend library and dialect for live music programming.
+}\DIFaddend This paper presents Phizura, a recording tool for on-the-fly music performances conducted with \DIFdelbegin \DIFdel{Coypu, a }\DIFdelend \DIFaddbegin \DIFadd{Coypu--a }\DIFaddend Pharo-based library and dialect for live music programming.
 \DIFdelbegin \DIFdel{To our knowledge, this is the first tool to record live coding performances via reflective instrumentation, replayable as self-contained scripts at evaluation granularity.
 Phizura leverages Method Proxies}\DIFdelend \DIFaddbegin \DIFadd{Phizura uses MethodProxies}\DIFaddend , a safe and fast \DIFdelbegin \DIFdel{message-passing control library, to non-intrusively intercept code evaluations and keystrokes during a performance.
 The recorded data, }\DIFdelend \DIFaddbegin \DIFadd{per-method instrumentation library.
 Phizura provides clean, non-invasive instrumentation that captures both keystrokes and evaluations without polluting the original codebase.
 Phizura generates code with the }\DIFaddend timestamped expressions and input events \DIFdelbegin \DIFdel{, can later be emitted as executable Pharo code that faithfully }\DIFdelend \DIFaddbegin \DIFadd{that }\DIFaddend replays the performance with the original timing.
-\DIFdelbegin \DIFdel{We describe the architecture of Phizura, detail how Method Proxies enable a clean separation between recording logic and }\DIFdelend \DIFaddbegin \DIFadd{Being Pharo a fully live environment, the instrumentation can be installed and removed on a running image during the performance itself, and }\DIFaddend the \DIFdelbegin \DIFdel{Coypu codebase, and compare the approach to a previous Announcer-based implementation.
+\DIFdelbegin \DIFdel{We describe the architecture of Phizura, detail how Method Proxies enable a clean separation between recording logic and }\DIFdelend \DIFaddbegin \DIFadd{As Pharo is a fully live environment, the instrumentation can be installed and removed on a running image during the performance itself, and }\DIFaddend the \DIFdelbegin \DIFdel{Coypu codebase, and compare the approach to a previous Announcer-based implementation.
 Phizura provides clean, non-invasive instrumentation that captures both keystrokes and evaluations without polluting the original Coypu codebase}\DIFdelend \DIFaddbegin \DIFadd{replay is not a video or a log but editable and readable code.
 To the best of our knowledge, this is the first tool to record live coding performances via reflective instrumentation, replayable as self-contained scripts at evaluation granularity}\DIFaddend .
 \end{abstract}
@@ -208,10 +208,10 @@ Live coding is an increasingly popular creative practice in which performers wri
 The field has developed a substantial academic presence: the International Conference on Live Coding (ICLC), now in its tenth year, has served as the primary venue for peer-reviewed research on the practice, attracting contributions from computer science, music, and the performing arts.
 Programming languages such as Tidal Cycles~\cite{McLe14a}, Sonic Pi~\cite{Aaro16a}, and Orca~\cite{Mess21a} have popularized the practice, each offering alternative syntaxes and notations for expressing musical patterns. Within the Pharo ecosystem, Coypu\cite{Cipr25c} provides a library and a DSL for on-the-fly music programming, enabling performers to construct rhythmic sequences, melodic patterns, and to modify them interactively in a Playground.
 
-To date, relatively little scholarly attention has been devoted to capturing and preserving live coding performances, particularly the generative process itself. Audio recording captures the sonic result but discards the compositional process: the sequence of code edits, evaluations, and their precise timing. Audio files are also large, difficult to share, and impossible to re-execute under a different setup. Compositional data, by contrast, enables exact replay of a performance with alternative sound synthesis, facilitates sharing between musicians as lightweight text files, supports analysis of live coding practice, and opens the door to automated post-processing of performances. This concern has been raised explicitly in the Tidal Cycles community\footnote{Tidal Club Forum, How to replay a live coding session. Link at \url{https://club.tidalcycles.org/t/how-to-replay-a-live-coding-session/464}, 2020.}, where users have discussed the need for tools that store every evaluation with its timestamp and allow session-based replay. However, no integrated solution has emerged so far. With Phizura, recorded performances become living scripts that can be replayed, remixed, and rew-composed with new sounds.
+To date, relatively little scholarly attention has been devoted to capturing and preserving live coding performances, particularly the generative process itself. Audio recording captures the sonic result but discards the compositional process: the sequence of code edits, evaluations, and their precise timing. Audio files are also large, difficult to share, and impossible to re-execute under a different setup. Compositional data, by contrast, enables exact replay of a performance with alternative sound synthesis, facilitates sharing between musicians as lightweight text files, supports analysis of live coding practice, and opens the door to automated post-processing of performances. This concern has been raised explicitly in the Tidal Cycles community\footnote{Tidal Club Forum, How to replay a live coding session. Link at \url{https://club.tidalcycles.org/t/how-to-replay-a-live-coding-session/464}, 2020.}, where users have discussed the need for tools that store every evaluation with its timestamp and allow session-based replay. However, no integrated solution has emerged so far. With Phizura, recorded performances become living scripts that can be replayed, remixed, and \DIFdelbegin \DIFdel{rew-composed }\DIFdelend \DIFaddbegin \DIFadd{re-composed }\DIFaddend with new sounds.
 
 \DIFaddbegin \DIFadd{Phizura exists because in Pharo the language and the IDE were co-designed as one live system, and the IDE itself is the running program.
-Code is kept  as objects in memory rather than as text in files.
+Code is kept as objects in memory rather than as text in files.
 The debugger opens inside the running execution context, and a method rewritten there resumes without a restart~\mbox{%DIFAUXCMD
 \cite{Grig26a}}\hskip0pt%DIFAUXCMD
 .
@@ -225,21 +225,21 @@ Live music in a live environment.
 
 \DIFaddend This paper presents the design and implementation of Phizura, shows how Method Proxies\cite{Jord24b} can be applied beyond profiling and debugging to support creative coding workflows, and compares the current approach to the previous Announcer-based implementation. The paper begins with background on Coypu and Method Proxies, then discusses the limitations of the earlier Announcer-based approach that motivated the redesign. It continues with the architecture and implementation of Phizura, the code emission and replay mechanism, and a discussion of related work. It closes with a reflection on generality, limitations, and future directions.
 
-Future improvements includes a plan to expose a simpler public API that lets live coders define their own capture handlers, giving them more control over what is recorded and how it is processed. We also intend to support recording across multiple Playgrounds at once, to capture collaborative sessions.
+Future improvements \DIFdelbegin \DIFdel{includes }\DIFdelend \DIFaddbegin \DIFadd{include }\DIFaddend a plan to expose a simpler public API that lets live coders define their own capture handlers, giving them more control over what is recorded and how it is processed. We also intend to support recording across multiple Playgrounds at once, to capture collaborative sessions.
 
 \section{Background}\label{sec:bac}
 
 \subsection{Live coding}
-Live coding (sometimes referred to as 'on-the-fly programming', 'just in time programming' and 'conversational programming') is a performing arts form and a creativity technique centred upon the writing of source code and the use of interactive programming in an improvised way\footnote{Quoting Wikipedia.}. This performance practice that takes shape as adventure and exploration~\cite{Blac22a}. It spans music, visual art, and poetry, and readily combines with dance and theater, making it a fertile ground for cross-disciplinary creation. The live coding practice resists fixed definitions and stays heterogeneous by nature, continually challenging its own self-understanding through the act of writing and rewriting code.
+Live coding (sometimes referred to as 'on-the-fly programming', '\DIFdelbegin \DIFdel{just in time }\DIFdelend \DIFaddbegin \DIFadd{just-in-time }\DIFaddend programming' and 'conversational programming') is a performing arts form and a creativity technique centred upon the writing of source code and the use of interactive programming in an improvised way\footnote{Quoting Wikipedia.}. This performance practice \DIFdelbegin \DIFdel{that }\DIFdelend takes shape as adventure and exploration~\cite{Blac22a}. It spans music, visual art, and poetry, and readily combines with dance and theater, making it a fertile ground for cross-disciplinary creation. The live coding practice resists fixed definitions and stays heterogeneous by nature, continually challenging its own self-understanding through the act of writing and rewriting code.
 A live coding musician works like an improvising composer, reshaping the entire structure of a piece by writing code on the fly. The code becomes the score, and the computer performs the music as the audience watches it being written.
 A substantial body of academic writing has grown around the practice, much of it gathered in the proceedings of the International Conference on Live Coding (ICLC), held since its first edition at the University of Leeds in 2015~\cite{McLe15a} and convened roughly every year since across Europe, the Americas, and Asia.
 Many languages and environments, spanning a range of programming paradigms, have been built for live coding, including TidalCycles, Impromptu, Sonic Pi, Orca, and Mercury, among others\footnote{Check \url{https://github.com/toplap/awesome-livecoding\#languages} for a comprehensive list of live coding languages}. Coypu is one of the most recent additions to this list, and the first to bring live coding into the Smalltalk world.
 \subsection{Coypu: programming music on-the-fly with Pharo}
 
 
-Coypu\cite{Cipr25c} is a library and domain-specific dialect for live coding music  inside the Pharo environment. It acts as a client for an audio server, which can be either internal (a Phausto~\cite{Cipr24b} DSP running within Pharo) or an external OSC-capable\footnote{Open Sound Control (OSC) is a protocol for real-time communication between multimedia devices and software, typically transmitted over UDP, \url{https://opensoundcontrol.stanford.edu}.}application, typically SuperCollider via the SuperDirt engine, or a MIDI device. 
+Coypu\cite{Cipr25c} is a library and domain-specific dialect for live coding music inside the Pharo environment. It acts as a client for an audio server, which can be either internal (a Phausto~\cite{Cipr24b} DSP running within Pharo) or an external OSC-capable\footnote{Open Sound Control (OSC) is a protocol for real-time communication between multimedia devices and software, typically transmitted over UDP, \url{https://opensoundcontrol.stanford.edu}.} application, typically SuperCollider via the SuperDirt engine, or a MIDI device. 
 Coypu code is written and executed in a Pharo Playground; its vocabulary provides an extended set of methods for creating rhythmic and melodic sequences. Once these sequences are assigned to the Performance, an internal scheduler advances time and dispatches musical events to the selected audio server\footnote{An experimental audio-visual live coding performance with Coypu, Phausto and Bloc at ESUG 2024 \url{https://www.youtube.com/watch?v=8s3wypwqzSc&list=PLJ5nSnWzQXi-uyYOZIVgXg1up_bclQc7e&index=33&t=85s} }.
-A musician performing with Coypu can also modify patterns in real time, muting or soloing individual voices, swapping instruments, and layering new material over what is already running. Every evaluation hits the running output immediately. The performance is shaped by what gets evaluated, when, and in what order and that is exactly what Phizura records.
+A musician performing with Coypu can also modify patterns in real time, muting or soloing individual voices, swapping instruments, and layering new material over what is already running. Every evaluation hits the running output immediately. The performance is shaped by what gets evaluated, when, and in what order\DIFaddbegin \DIFadd{, }\DIFaddend and that is exactly what Phizura records.
 
 \begin{figure}[ht!]
 \begin{center}
@@ -257,9 +257,9 @@ MethodProxies~\cite{Jord24b} is a per-method instrumentation library for Pharo t
 The library exposes a stratified architecture in which the user-facing API is reduced to subclassing a handler class (\ct{MpHandler}) and overriding a small set of hooks; the framework manages the underlying instrumentation mechanics. The same handler can be associated with several proxied methods, which allows information to be aggregated across distinct call sites without duplicating logic.
 
 Internally, each instrumented method is replaced in its method dictionary by a precompiled \emph{trap method} that orchestrates the execution of the hooks.
-To avoid runtime compilation, MethodProxies ships a small set of precompiled trap prototypes. one per method arity. that are copied at installation time and literal patched 
+To avoid runtime compilation, MethodProxies ships a small set of precompiled trap prototypes. one per method arity\DIFdelbegin \DIFdel{. }\DIFdelend \DIFaddbegin \DIFadd{, }\DIFaddend that are copied at installation time and literal patched 
 Because the trap remains a regular \ct{CompiledMethod}, it is JIT-compiled and optimized by the virtual machine as any other method.
-Stack unwinds are handled through the Pharo's built-in unwind mechanism rather than through the standard \ct{ensure:} construct, avoiding the allocation of block closures and the associated stack reification cost.
+Stack unwinds are handled through \DIFdelbegin \DIFdel{the }\DIFdelend Pharo's built-in unwind mechanism rather than through the standard \ct{ensure:} construct, avoiding the allocation of block closures and the associated stack reification cost.
 
 MethodProxies also guarantees a number of properties that make it suitable for instrumenting arbitrary parts of the system, including the language kernel. It is \emph{meta-safe} --- instrumented methods can be invoked from within a handler without re-entering the instrumentation, since the active process is marked as meta-level during hook execution and the trap is bypassed while this flag is set.
 It is \emph{unwind-safe}, supports dynamic installation and deinstallation at run time, and reports an average overhead of approximately 1.5~$\times$ with the meta-safety mechanism itself adding only about 9\%~\cite{Jord24b}.
@@ -276,7 +276,7 @@ Recording logic was distributed throughout the codebase, and supporting each new
 The recorder depended on specific announcement classes defined within the library, making the two systems difficult to evolve independently.
 Extending it to capture additional events, such as keystrokes, cursor positions, or events from other tools, required yet more invasive changes.
 And every modification to the evaluation pipeline risked breaking or silently bypassing the recording hooks.
-These limitations motivated the redesign using Method Proxies, which externalizes the instrumentation entirely and it does not require modifying the source code.
+These limitations motivated the redesign using Method Proxies, which externalizes the instrumentation entirely and \DIFdelbegin \DIFdel{it }\DIFdelend does not require modifying the source code.
 
 \section{MethodProxies-based vs. Announcer-based approaches}
 
@@ -307,7 +307,7 @@ In the next section, we will present how we used MethodProxies to implement Phiz
 
 \section{Phizura: on-the-fly music recording}
 
-Phizura\footnote{Phziura is available at GitHub at \url{https://github.com/jordanmontt/Phizura}}, pronounced \texttt{/fi'su\*ra/} following Latin American Spanish phonetics, is a Coypu\footnote{Copyu can be found at \url{github.com/lucretiomsp/Coypu}}\ replayer.
+Phizura\footnote{\DIFdelbegin \DIFdel{Phziura }\DIFdelend \DIFaddbegin \DIFadd{Phizura }\DIFaddend is available at GitHub at \url{https://github.com/jordanmontt/Phizura}}, pronounced \texttt{/fi'su\*ra/} following Latin American Spanish phonetics, is a Coypu\footnote{\DIFdelbegin \DIFdel{Copyu }\DIFdelend \DIFaddbegin \DIFadd{Coypu }\DIFaddend can be found at \url{github.com/lucretiomsp/Coypu}}\ replayer.
 Coypu is a library for live-generating electronic music.
 It is typically used by musicians and artists to perform live shows in which they generate and play music in real time.
 These performances are characterized by improvisation, which is the central artistic concept behind them.
@@ -324,7 +324,7 @@ We instrumented the methods responsible for code evaluation (compilation plus ex
 Pharo already provides support for capturing keystrokes, so we integrated a call to Phizura within the existing callback. 
 
 The programmer can configure when to start and stop instrumentation. 
-Because Method Proxies allows dynamic (de)instrumentation without restarting, the programmer record or stop recording at any time.
+Because Method Proxies \DIFdelbegin \DIFdel{allows }\DIFdelend \DIFaddbegin \DIFadd{allow }\DIFaddend dynamic (de)instrumentation without restarting, the programmer \DIFaddbegin \DIFadd{can }\DIFaddend record or stop recording at any time.
 Afterward, double dispatch is used to generate code that reproduces the session, preserving the original temporal flow by incorporating the recorded timestamps as delays.
 The generated code can also include custom actions, such as sending external signals to other devices for each code evaluation or keystroke.
 
@@ -341,8 +341,8 @@ The rest of this section follows the three responsibilities the system actually 
 \subsection{Instrumentation}
 
 A single class, \ct{PhizuraEvaluationInstrumentor}, decides which methods to intercept and installs a \ct{MpMethodProxy} on each one.
-The two methods that are invoked during code evaluation methods are instrumented.
-Phizura covers all endpoints of code evaluation and it ensures that every evaluation is captured.
+The two methods that are invoked during code evaluation \DIFdelbegin \DIFdel{methods }\DIFdelend are instrumented.
+Phizura covers all endpoints of code evaluation and \DIFdelbegin \DIFdel{it }\DIFdelend ensures that every evaluation is captured.
 Both proxies share the same handler instance.
 
 The handler is the only piece of user-defined behavior the system needs.
@@ -429,7 +429,7 @@ ep playFor: 128 bars.
 
 The second mode, \ct{emitMoofLODCode}, extends the performance code with OSC-compatible messages
 Each evaluated expression, keystroke, and cursor position is also signaled.
-The resulting script still reproduces the music, but it now also exposes everything that happened during the session to any OSC-capable consumer, opening the door to live visualizations, second-screen overlays, or synchronization with other tools.
+The resulting script still reproduces the music, but \DIFdelbegin \DIFdel{it now }\DIFdelend also exposes everything that happened during the session to any OSC-capable consumer, opening the door to live visualizations, second-screen overlays, or synchronization with other tools.
 
 \begin{lstlisting}[label={lst:emitted-mooflod},caption={Example of emitted MoofLOD code (middle elided)}]
 [
@@ -469,14 +469,14 @@ Another related effort is SHARP~\cite{Bowm23a}, a Pulsar\footnote{Pulsar (\url{h
 \section{Generality beyond music}
 This instrumentation targets all expressions evaluated in the Playground, not any Coypu-specific code. As a result, any expression evaluated in a Phizura Playground is captured\footnote{Whether the code produces sound, generates visuals, manipulates data, or does anything else entirely.}, making the approach entirely generic.
 This opens several concrete uses beyond music. In the domain of visual live coding, performances using Bloc or Roassal for real-time graphics could be recorded and replayed with the same tool, without any modification to Phizura.
-Beyond live performance, Phizura can serve as a general-purpose prototyping recorder. Developers routinely explore APIs, test hypotheses, and prototype solutions through sequences of small evaluations. Phizura can capture these sessions as timestamped scripts, providing a lightweight form of session recording that preserves not just what was tried, but in what order and at what pace. Think documenting design decisions, reviewing your own process, or sharing a discovery workflow with other users.
+Beyond live performance, Phizura can serve as a general-purpose prototyping recorder. Developers routinely explore APIs, test hypotheses, and prototype solutions through sequences of small evaluations. Phizura can capture these sessions as timestamped scripts, providing a lightweight form of session recording that preserves not just what was tried, but in what order and at what pace. Think \DIFaddbegin \DIFadd{of }\DIFaddend documenting design decisions, reviewing your own process, or sharing a discovery workflow with other users.
 
-A third application is pedagogical. An instructor demonstrating a concept in a Pharo Playground could record the session and distribute it as a small text file. Students would then replay the demonstration at their own pace, seeing each evaluation appear with the original timing. Unlike a video recording, the replayed script is live code: students can pause it, modify the expressions, and explore variations. Unlike a video recording, the replayed script is live code: students can pause it, modify the expressions, and explore variations. Unlike a static code listing, it preserves the temporal dimension, the order and rhythm of the instructor's thought process.%%
+A third application is pedagogical. An instructor demonstrating a concept in a Pharo Playground could record the session and distribute it as a small text file. Students would then replay the demonstration at their own pace, seeing each evaluation appear with the original timing. Unlike a video recording, the replayed script is live code: students can pause it, modify the expressions, and explore variations. Unlike a \DIFdelbegin \DIFdel{video recording, the replayed script is live code: students can pause it, modify the expressions, and explore variations. Unlike a }\DIFdelend static code listing, it preserves the temporal dimension, the order and rhythm of the instructor's thought process.%%
 
 
 \section{Conclusion and future work}
 
-This paper presented Phizura, a non-intrusive recorder for live coding performances in Pharo. Using Method Proxies, the instrumentation of the Playground's evaluation methods happens without modifying the Coypu codebase. The recorded timestamped expressions can be emitted as executable Pharo code that replays the performance with faithful timing. Compared to the previous Announcer-based implementation, the Method Proxies approach is modular, decoupled, and extensible\DIFaddbegin \DIFadd{.
+This paper \DIFdelbegin \DIFdel{presented }\DIFdelend \DIFaddbegin \DIFadd{presents }\DIFaddend Phizura, a non-intrusive recorder for live coding performances in Pharo. Using Method Proxies, the instrumentation of the Playground's evaluation methods happens without modifying the Coypu codebase. The recorded timestamped expressions can be emitted as executable Pharo code that replays the performance with faithful timing. Compared to the previous Announcer-based implementation, the Method Proxies approach is modular, decoupled, and extensible\DIFaddbegin \DIFadd{.
 }
 
 \DIFadd{More generally, Phizura shows the value of a live environment such as Pharo. A non-live environment can log a session, but it cannot install the logger mid performance, and it cannot hand back a recording that is itself executable, editable code. These are not incidental features; they follow directly from the Pharo object model. The ability to modify the system while it runs, and to treat any captured material as live code, changes the status of recording from passive documentation to active material. Recording need not be a departure from the live practice. It is an extension of it}\DIFaddend .
