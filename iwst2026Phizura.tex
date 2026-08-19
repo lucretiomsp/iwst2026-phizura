@@ -128,7 +128,8 @@ Code is kept as objects in memory rather than as text in files.
 The debugger opens inside the running execution context, and a method rewritten there resumes without a restart~\cite{Grig26a}.
 The instrumentation is not an exception: Phizura's instrumentation belongs to the same world: MethodProxies are installed and removed during a performance, on a running image, with no restart and no interruption of the audio.
 The same liveness shapes the output.
-What Phizura produces is not a video, an audio file, or a log to be inspected offline, but Pharo source that the image evaluates\footnote{A short demonstration of a recorded session and its replay is available at \url{https://youtu.be/RUYbLqxfRP8}}.
+What Phizura produces is not a video, an audio file, or a log to be inspected offline, but Pharo source that the image evaluates.
+A short demonstration of a recorded session and its replay is available in video format at \url{https://youtu.be/RUYbLqxfRP8}.
 A replayed performance can be paused, edited, re-timed, routed to a different synthesiser, or spliced into a new session.
 Recording therefore stops being documentation and becomes part of the instrument: the performer plays, captures, and plays the capture back as new material.
 Live music in a live environment.
@@ -144,8 +145,8 @@ Live coding (sometimes referred to as 'on-the-fly programming', 'just-in-time pr
 A live coding musician works like an improvising composer, reshaping the entire structure of a piece by writing code on the fly. The code becomes the score, and the computer performs the music as the audience watches it being written.
 A substantial body of academic writing has grown around the practice, much of it gathered in the proceedings of the International Conference on Live Coding (ICLC), held since its first edition at the University of Leeds in 2015~\cite{McLe15a} and convened roughly every year since across Europe, the Americas, and Asia.
 Many languages and environments, spanning a range of programming paradigms, have been built for live coding, including TidalCycles, Impromptu, Sonic Pi, Orca, and Mercury, among others\footnote{Check \url{https://github.com/toplap/awesome-livecoding\#languages} for a comprehensive list of live coding languages}. Coypu is one of the most recent additions to this list, and the first to bring live coding into the Smalltalk world.
-\subsection{Coypu: programming music on-the-fly with Pharo}
 
+\subsection{Coypu: programming music on-the-fly with Pharo}
 
 Coypu\cite{Cipr25c} is a library and domain-specific dialect for live coding music inside the Pharo environment. It acts as a client for an audio server, which can be either internal (a Phausto~\cite{Cipr24b} DSP running within Pharo) or an external OSC-capable\footnote{Open Sound Control (OSC) is a protocol for real-time communication between multimedia devices and software, typically transmitted over UDP, \url{https://opensoundcontrol.stanford.edu}.} application, typically SuperCollider via the SuperDirt engine, or a MIDI device. 
 Coypu code is written and executed in a Pharo Playground; its vocabulary provides an extended set of methods for creating rhythmic and melodic sequences. Once these sequences are assigned to the Performance, an internal scheduler advances time and dispatches musical events to the selected audio server\footnote{An experimental audio-visual live coding performance with Coypu, Phausto and Bloc at ESUG 2024 \url{https://www.youtube.com/watch?v=8s3wypwqzSc&list=PLJ5nSnWzQXi-uyYOZIVgXg1up_bclQc7e&index=33&t=85s} }.
